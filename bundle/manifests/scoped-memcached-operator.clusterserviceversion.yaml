@@ -121,7 +121,7 @@ spec:
                 - --leader-elect
                 command:
                 - /manager
-                image: bpalmer/scoped-memcached-operator:0.0.1
+                image: bpalmer/scoped-operator-poc:0.0.1
                 livenessProbe:
                   httpGet:
                     path: /healthz
