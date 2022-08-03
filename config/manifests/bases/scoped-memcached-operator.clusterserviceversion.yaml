@@ -1,0 +1,48 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+  name: scoped-memcached-operator.v0.0.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: Memcached is the Schema for the memcacheds API
+      displayName: Memcached
+      kind: Memcached
+      name: memcacheds.cache.example.com
+      version: v1alpha1
+  description: sample operator for testing scoped RBAC
+  displayName: scoped-memcached
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      deployments: null
+    strategy: ""
+  installModes:
+  - supported: false
+    type: OwnNamespace
+  - supported: false
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - scoped
+  - memcached
+  links:
+  - name: Scoped Memcached Operator
+    url: https://scoped-memcached-operator.domain
+  maintainers:
+  - email: bpalmer@redhat.com
+    name: bryce
+  maturity: alpha
+  provider:
+    name: scoped-operator
+  version: 0.0.0

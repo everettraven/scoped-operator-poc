@@ -1,0 +1,23 @@
+apiVersion: cache.example.com/v1alpha1
+kind: Memcached
+metadata:
+  name: memcached-sample
+  namespace: allowed-one
+spec:
+  size: 2
+---
+apiVersion: cache.example.com/v1alpha1
+kind: Memcached
+metadata:
+  name: memcached-sample
+  namespace: allowed-two
+spec:
+  size: 3
+---
+apiVersion: cache.example.com/v1alpha1
+kind: Memcached
+metadata:
+  name: memcached-sample
+  namespace: denied
+spec:
+  size: 1
