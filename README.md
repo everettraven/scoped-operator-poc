@@ -23,7 +23,7 @@ kubectl create namespace denied
 
 4. Run the `scoped-operator-poc` bundle by using:
 ```
-operator-sdk run bundle docker.io/bpalmer/scoped-operator-poc-bundle:v0.0.1
+operator-sdk run bundle docker.io/bpalmer/scoped-operator-poc-bundle:v0.0.1 --index-image quay.io/operator-framework/opm:v1.23.0
 ```
 
 5. Check the logs of the controller by running:
@@ -49,7 +49,7 @@ This is what we are expecting because we have not applied any RBAC to allow the 
 
 6. Give the operator all it's permissions in only the `allowed-one` and `allowed-two` namespaces by running:
 ```
-kubectl apply -f custom-rbac.yaml
+kubectl apply -f scoped-rbac.yaml
 ```
 This will create a `RoleBinding` for both the `allowed-one` and `allowed-two` namespaces, binding the `ClusterRole` named `scoped-memcached-operator-manager-role`. This `ClusterRole` gives the operator all the permissions it needs to operate properly and the `RoleBinding`s that we created restrict the operator to only being able to operate within the `allowed-one` and `allowed-two` namespaces.
 
@@ -120,6 +120,27 @@ No resources found in denied namespace.
 We can also check that there are no pods by running:
 ```
 kubectl -n denied get pods
+```
+
+14. Modify the RBAC so that the operator has cluster level permissions:
+Delete the Scoped RBAC:
+```
+kubectl delete -f scoped-rbac.yaml
+```
+
+Add the cluster level RBAC:
+```
+kubectl apply -f cluster-rbac.yaml
+```
+
+Restart the pod:
+```
+kubectl delete pods <pod name>
+```
+
+Checking logs of the recreated pod we should see that the `denied` namespace is now picked up:
+```
+
 ```
 
 ### Demo GIF 
