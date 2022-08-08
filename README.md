@@ -167,55 +167,29 @@ The following is a performance evaluation to determine how the number of connect
 When scoping an operator the formula for determining the number of connections/requests made to the Kubernetes API Server is as follows:
 
 **Note:** 
-```math
-N \e # of namespaces on the cluster
-R \e # of resources being listed/watched by the operator
-P \e # of permitted namespaces
-```
+- N = # of namespaces on the cluster
+- R = # of resources being listed/watched by the operator
+- P = # of permitted namespaces
 
 When the operator is given cluster level permissions for all resources:
-- List Formula:
-```math
-x = 2R
-```
+- List Formula: x = 2R
     - Creates one `SelfSubjectAccessReview` and one `List` request for each resource
-- Watch Formula (performs one list and one ):
-```math
-x = 3R
-```
+- Watch Formula: x = 3R
     - Creates one `SelfSubjectAccessReview`, one `List` request, and one `Watch` request for each resource
 - For example, if an operator is given cluster level permissions for 3 resources, the number of requests/connections would be:
-    - List request:
-    ```math
-    x = 2(3) = 6
-    ```
-    - Watch request:
-    ```math
-    x = 3(3) = 9
-    ```
+    - List request: x = 2(3) = 6
+    - Watch request: x = 3(3) = 9
 
 When the operator is scoped to a set of namespaces:
-- List Formula:
-```math
-x = NR + PR
-```
+- List Formula: x = NR + PR
     - Creates a `SelfSubjectAccessReview` for each namespace on the cluster for each resource 
     - Creates a `List` request for each permitted namespace for each resource
-- Watch Formula:
-```math
-x = 2NR + 2PR
-```
+- Watch Formula: x = 2NR + 2PR
     - Creates two `SelfSubjectAccessReview`s for each namespace on the cluster (one during the `List` and one during the `Watch` requests) for each resource
     - Creates one `List` and one `Watch` request for each permitted namespace for each resource
 - For example, if an operator is run on a cluster with 10 namespaces and is scoped to 3 namespaces for 3 resources, the number of requests/connections would be:
-    - List request: 
-    ```math
-    x=(10)(3)+(3)(3)=30+9=39
-    ```
-    - Watch request: 
-    ```math
-    x=2(10)(3)+2(3)(3)=60+18=78
-    ```
+    - List request: x = (10)(3) + (3)(3) = 30 + 9 = 39
+    - Watch request: x = 2(10)(3) + 2(3)(3) = 60 + 18 = 78
 
 ## All Namespaces/Cluster Permissions
 
