@@ -172,24 +172,24 @@ When scoping an operator the formula for determining the number of connections/r
 - P = # of permitted namespaces
 
 When the operator is given cluster level permissions for all resources:
-- List Formula: x = 2R
+- List Formula: `x = 2R`
     - Creates one `SelfSubjectAccessReview` and one `List` request for each resource
-- Watch Formula: x = 3R
+- Watch Formula: `x = 3R`
     - Creates one `SelfSubjectAccessReview`, one `List` request, and one `Watch` request for each resource
 - For example, if an operator is given cluster level permissions for 3 resources, the number of requests/connections would be:
-    - List request: x = 2(3) = 6
-    - Watch request: x = 3(3) = 9
+    - List request: `x = 2(3) = 6`
+    - Watch request: `x = 3(3) = 9`
 
 When the operator is scoped to a set of namespaces:
-- List Formula: x = NR + PR
+- List Formula: `x = NR + PR`
     - Creates a `SelfSubjectAccessReview` for each namespace on the cluster for each resource 
     - Creates a `List` request for each permitted namespace for each resource
-- Watch Formula: x = 2NR + 2PR
+- Watch Formula: `x = 2NR + 2PR`
     - Creates two `SelfSubjectAccessReview`s for each namespace on the cluster (one during the `List` and one during the `Watch` requests) for each resource
     - Creates one `List` and one `Watch` request for each permitted namespace for each resource
 - For example, if an operator is run on a cluster with 10 namespaces and is scoped to 3 namespaces for 3 resources, the number of requests/connections would be:
-    - List request: x = (10)(3) + (3)(3) = 30 + 9 = 39
-    - Watch request: x = 2(10)(3) + 2(3)(3) = 60 + 18 = 78
+    - List request: `x = (10)(3) + (3)(3) = 30 + 9 = 39`
+    - Watch request: `x = 2(10)(3) + 2(3)(3) = 60 + 18 = 78`
 
 ## All Namespaces/Cluster Permissions
 
