@@ -191,6 +191,7 @@ I0804 17:56:46.171207       1 leaderelection.go:258] successfully acquired lease
 ![OpenShift etcd Metric Cards Before](.github/images/performance/cluster/etcd-metrics-cards-before.png)
 
 **After - Restarted with permissisons at 10 AM**
+
 All images captured ~5 minutes after controller started
 
 - *CPU Usage Graph - OS API Server*
@@ -220,8 +221,6 @@ All images captured ~5 minutes after controller started
 - *Metric Cards - OS etcd*
 ![OpenShift etcd Metric Cards After](.github/images/performance/cluster/etcd-metric-cards-after.png)
 
-**NOTES**
-We can see that when scoped to all namespaces/cluster-wide permissions the impact is very small. We can see a slight increase in resource utilization around the time the controller is started and then it levels off a bit after.
 
 ## Single Namespace Permissions
 
@@ -255,6 +254,7 @@ We can see that when scoped to all namespaces/cluster-wide permissions the impac
 ![OpenShift etcd Metric Cards Before](.github/images/performance/single/etcd-metric-before.png)
 
 **After - Restarted with permissisons at 11 AM**
+
 All images captured ~5 minutes after controller started
 
 - *CPU Usage Graph - OS API Server*
@@ -319,6 +319,7 @@ Controller started at 2:10 PM (forgot to take a picture of memory graph before t
 ![OpenShift etcd Metric Cards Before](.github/images/performance/many/ten/etcd-metric-before.png)
 
 **After - Restarted with permissisons at 2:10 PM**
+
 All images captured ~5 minutes after controller started
 
 - *CPU Usage Graph - OS API Server*
@@ -385,6 +386,7 @@ Controller started at 2:10 PM (forgot to take a picture of memory graph before t
 ![OpenShift etcd Metric Cards Before](.github/images/performance/many/hundred/etcd-metric-before.png)
 
 **After - Restarted with permissisons at 2:49 PM**
+
 All images captured ~5 minutes after controller started
 
 - *CPU Usage Graph - OS API Server*
@@ -450,6 +452,7 @@ All images captured ~5 minutes after controller started
 ![OpenShift etcd Metric Cards Before](.github/images/performance/many/thousand/etcd-metric-before.png)
 
 **After - Restarted with permissisons at 3:27 PM**
+
 All images captured ~5 minutes after controller started
 
 - *CPU Usage Graph - OS API Server*
