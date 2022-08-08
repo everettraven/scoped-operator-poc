@@ -157,6 +157,330 @@ I0804 17:56:46.171207       1 leaderelection.go:258] successfully acquired lease
 ### Demo GIF 
 ![demo gif](.github/images/scoped-operator-poc-demo.gif)
 
+# Performance Evaluation
+
+## All Namespaces/Cluster Permissions
+
+**Before**
+
+- *CPU Usage Graph - OS API Server*
+![OpenShift API Server CPU Usage Before](.github/images/performance/cluster/os-api-cpu-usage-graph-before.png)
+
+- *Memory Usage Graph - OS API Server*
+![OpenShift API Server Memory Usage Before](.github/images/performance/cluster/os-api-mem-usage-graph-before.png)
+
+- *Metric Cards - OS API Server*
+![OpenShift API Server Metric Cards Before](.github/images/performance/cluster/os-api-metrics-cards-before.png)
+
+- *CPU Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server CPU Usage Before](.github/images/performance/cluster/kube-api-cpu-usage-before.png)
+
+- *Memory Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server Memory Usage Before](.github/images/performance/cluster/kube-api-memory-usage-before.png)
+
+- *Metric Cards - OS Kube API Server*
+![OpenShift Kube API Server Metric Cards Before](.github/images/performance/cluster/kube-api-metrics-cards-before.png)
+
+- *CPU Usage Graph - OS etcd*
+![OpenShift etcd CPU Usage Before](.github/images/performance/cluster/etcd-cpu-usage-before.png)
+
+- *Memory Usage Graph - OS etcd*
+![OpenShift etcd Memory Usage Before](.github/images/performance/cluster/etcd-mem-usage-before.png)
+
+- *Metric Cards - OS etcd*
+![OpenShift etcd Metric Cards Before](.github/images/performance/cluster/etcd-metrics-cards-before.png)
+
+**After - Restarted with permissisons at 10 AM**
+All images captured ~5 minutes after controller started
+
+- *CPU Usage Graph - OS API Server*
+![OpenShift API Server CPU Usage After](.github/images/performance/cluster/os-api-cpu-usage-after.png)
+
+- *Memory Usage Graph - OS API Server*
+![OpenShift API Server Memory Usage After](.github/images/performance/cluster/os-api-mem-after.png)
+
+- *Metric Cards - OS API Server*
+![OpenShift API Server Metric Cards After](.github/images/performance/cluster/os-api-metric-cards-after.png)
+
+- *CPU Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server CPU Usage After](.github/images/performance/cluster/kube-api-cpu-after.png)
+
+- *Memory Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server Memory Usage After](.github/images/performance/cluster/kube-api-mem-after.png)
+
+- *Metric Cards - OS Kube API Server*
+![OpenShift Kube API Server Metric Cards After](.github/images/performance/cluster/kube-api-metrics-after.png)
+
+- *CPU Usage Graph - OS etcd*
+![OpenShift etcd CPU Usage After](.github/images/performance/cluster/etcd-cpu-after.png)
+
+- *Memory Usage Graph - OS etcd*
+![OpenShift etcd Memory Usage After](.github/images/performance/cluster/etcd-mem-after.png)
+
+- *Metric Cards - OS etcd*
+![OpenShift etcd Metric Cards After](.github/images/performance/cluster/etcd-metric-cards-after.png)
+
+**NOTES**
+We can see that when scoped to all namespaces/cluster-wide permissions the impact is very small. We can see a slight increase in resource utilization around the time the controller is started and then it levels off a bit after.
+
+## Single Namespace Permissions
+
+**Before**
+
+- *CPU Usage Graph - OS API Server*
+![OpenShift API Server CPU Usage Before](.github/images/performance/single/os-api-cpu-before.png)
+
+- *Memory Usage Graph - OS API Server*
+![OpenShift API Server Memory Usage Before](.github/images/performance/single/os-api-mem-before.png)
+
+- *Metric Cards - OS API Server*
+![OpenShift API Server Metric Cards Before](.github/images/performance/single/os-api-metrics-before.png)
+
+- *CPU Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server CPU Usage Before](.github/images/performance/single/kube-api-cpu-before.png)
+
+- *Memory Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server Memory Usage Before](.github/images/performance/single/kube-api-mem-before.png)
+
+- *Metric Cards - OS Kube API Server*
+![OpenShift Kube API Server Metric Cards Before](.github/images/performance/single/kube-api-metric-before.png)
+
+- *CPU Usage Graph - OS etcd*
+![OpenShift etcd CPU Usage Before](.github/images/performance/single/etcd-cpu-before.png)
+
+- *Memory Usage Graph - OS etcd*
+![OpenShift etcd Memory Usage Before](.github/images/performance/single/etcd-mem-before.png)
+
+- *Metric Cards - OS etcd*
+![OpenShift etcd Metric Cards Before](.github/images/performance/single/etcd-metric-before.png)
+
+**After - Restarted with permissisons at 11 AM**
+All images captured ~5 minutes after controller started
+
+- *CPU Usage Graph - OS API Server*
+![OpenShift API Server CPU Usage After](.github/images/performance/single/os-api-cpu-after.png)
+
+- *Memory Usage Graph - OS API Server*
+![OpenShift API Server Memory Usage After](.github/images/performance/single/os-api-mem-after.png)
+
+- *Metric Cards - OS API Server*
+![OpenShift API Server Metric Cards After](.github/images/performance/single/os-api-metric-after.png)
+
+- *CPU Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server CPU Usage After](.github/images/performance/single/kube-api-cpu-after.png)
+
+- *Memory Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server Memory Usage After](.github/images/performance/single/kube-api-mem-after.png)
+
+- *Metric Cards - OS Kube API Server*
+![OpenShift Kube API Server Metric Cards After](.github/images/performance/single/kube-api-metric-after.png)
+
+- *CPU Usage Graph - OS etcd*
+![OpenShift etcd CPU Usage After](.github/images/performance/single/etcd-cpu-after.png)
+
+- *Memory Usage Graph - OS etcd*
+![OpenShift etcd Memory Usage After](.github/images/performance/single/etcd-mem-after.png)
+
+- *Metric Cards - OS etcd*
+![OpenShift etcd Metric Cards After](.github/images/performance/single/etcd-metric-after.png)
+
+## Multiple Namespace Permissions
+
+### 10 Namespaces
+
+**Before**
+
+- *CPU Usage Graph - OS API Server*
+![OpenShift API Server CPU Usage Before](.github/images/performance/many/ten/os-api-cpu-before.png)
+
+- *Memory Usage Graph - OS API Server*
+![OpenShift API Server Memory Usage Before](.github/images/performance/many/ten/os-api-mem-before.png)
+
+- *Metric Cards - OS API Server*
+![OpenShift API Server Metric Cards Before](.github/images/performance/many/ten/os-api-metric-before.png)
+
+- *CPU Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server CPU Usage Before](.github/images/performance/many/ten/kube-api-cpu-before.png)
+
+- *Memory Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server Memory Usage Before](.github/images/performance/many/ten/kube-api-mem.png)
+Controller started at 2:10 PM (forgot to take a picture of memory graph before the controller was started)
+
+- *Metric Cards - OS Kube API Server*
+![OpenShift Kube API Server Metric Cards Before](.github/images/performance/many/ten/kube-api-metric-before.png)
+
+- *CPU Usage Graph - OS etcd*
+![OpenShift etcd CPU Usage Before](.github/images/performance/many/ten/etcd-cpu-before.png)
+
+- *Memory Usage Graph - OS etcd*
+![OpenShift etcd Memory Usage Before](.github/images/performance/many/ten/etcd-mem-before.png)
+
+- *Metric Cards - OS etcd*
+![OpenShift etcd Metric Cards Before](.github/images/performance/many/ten/etcd-metric-before.png)
+
+**After - Restarted with permissisons at 2:10 PM**
+All images captured ~5 minutes after controller started
+
+- *CPU Usage Graph - OS API Server*
+![OpenShift API Server CPU Usage After](.github/images/performance/many/ten/os-api-cpu-after.png)
+
+- *Memory Usage Graph - OS API Server*
+![OpenShift API Server Memory Usage After](.github/images/performance/many/ten/os-api-mem-after.png)
+
+- *Metric Cards - OS API Server*
+![OpenShift API Server Metric Cards After](.github/images/performance/many/ten/os-api-metric-after.png)
+
+- *CPU Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server CPU Usage After](.github/images/performance/many/ten/kube-api-cpu-after.png)
+
+- *Memory Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server Memory Usage After](.github/images/performance/many/ten/kube-api-mem.png)
+Controller started at 2:10 PM (forgot to take a picture of memory graph before the controller was started)
+
+- *Metric Cards - OS Kube API Server*
+![OpenShift Kube API Server Metric Cards After](.github/images/performance/many/ten/kube-api-metric-after.png)
+
+- *CPU Usage Graph - OS etcd*
+![OpenShift etcd CPU Usage After](.github/images/performance/many/ten/etcd-cpu-after.png)
+
+- *Memory Usage Graph - OS etcd*
+![OpenShift etcd Memory Usage After](.github/images/performance/many/ten/etcd-mem-after.png)
+
+- *Metric Cards - OS etcd*
+![OpenShift etcd Metric Cards After](.github/images/performance/many/ten/etcd-metric-after.png)
+
+---
+
+### 100 Namespaces
+
+*Note:* The before images are based on the controller still running with 10 namespaces. The after images will be based on when the controller was restarted to refresh the cache to add the additional 90 namespaces.
+
+**Before**
+
+- *CPU Usage Graph - OS API Server*
+![OpenShift API Server CPU Usage Before](.github/images/performance/many/hundred/os-api-cpu-before.png)
+
+- *Memory Usage Graph - OS API Server*
+![OpenShift API Server Memory Usage Before](.github/images/performance/many/hundred/os-api-mem-before.png)
+
+- *Metric Cards - OS API Server*
+![OpenShift API Server Metric Cards Before](.github/images/performance/many/hundred/os-api-metric-before.png)
+
+- *CPU Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server CPU Usage Before](.github/images/performance/many/hundred/kube-api-cpu-before.png)
+
+- *Memory Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server Memory Usage Before](.github/images/performance/many/hundred/kube-api-mem-before.png)
+
+- *Metric Cards - OS Kube API Server*
+![OpenShift Kube API Server Metric Cards Before](.github/images/performance/many/hundred/kube-api-metric-before.png)
+
+- *CPU Usage Graph - OS etcd*
+![OpenShift etcd CPU Usage Before](.github/images/performance/many/hundred/etcd-cpu-before.png)
+
+- *Memory Usage Graph - OS etcd*
+![OpenShift etcd Memory Usage Before](.github/images/performance/many/hundred/etcd-mem-before.png)
+
+- *Metric Cards - OS etcd*
+![OpenShift etcd Metric Cards Before](.github/images/performance/many/hundred/etcd-metric-before.png)
+
+**After - Restarted with permissisons at 2:49 PM**
+All images captured ~5 minutes after controller started
+
+- *CPU Usage Graph - OS API Server*
+![OpenShift API Server CPU Usage After](.github/images/performance/many/hundred/os-api-cpu-after.png)
+
+- *Memory Usage Graph - OS API Server*
+![OpenShift API Server Memory Usage After](.github/images/performance/many/hundred/os-api-mem-after.png)
+
+- *Metric Cards - OS API Server*
+![OpenShift API Server Metric Cards After](.github/images/performance/many/hundred/os-api-metric-after.png)
+
+- *CPU Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server CPU Usage After](.github/images/performance/many/hundred/kube-api-cpu-after.png)
+
+- *Memory Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server Memory Usage After](.github/images/performance/many/hundred/kube-api-mem-after.png)
+
+- *Metric Cards - OS Kube API Server*
+![OpenShift Kube API Server Metric Cards After](.github/images/performance/many/hundred/kube-api-metric-after.png)
+
+- *CPU Usage Graph - OS etcd*
+![OpenShift etcd CPU Usage After](.github/images/performance/many/hundred/etcd-cpu-after.png)
+
+- *Memory Usage Graph - OS etcd*
+![OpenShift etcd Memory Usage After](.github/images/performance/many/hundred/etcd-mem-after.png)
+
+- *Metric Cards - OS etcd*
+![OpenShift etcd Metric Cards After](.github/images/performance/many/hundred/etcd-metric-after.png)
+
+---
+
+### 1000 Namespaces
+
+*Note:* The before images are based on the controller still running with 100 namespaces. The after images will be based on when the controller was restarted to refresh the cache to add the additional 900 namespaces.
+
+**Before**
+
+- *CPU Usage Graph - OS API Server*
+![OpenShift API Server CPU Usage Before](.github/images/performance/many/thousand/os-api-cpu-before.png)
+
+- *Memory Usage Graph - OS API Server*
+![OpenShift API Server Memory Usage Before](.github/images/performance/many/thousand/os-api-mem-before.png)
+
+- *Metric Cards - OS API Server*
+![OpenShift API Server Metric Cards Before](.github/images/performance/many/thousand/os-api-metric-before.png)
+
+- *CPU Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server CPU Usage Before](.github/images/performance/many/thousand/kube-api-cpu-before.png)
+
+- *Memory Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server Memory Usage Before](.github/images/performance/many/thousand/kube-api-mem-before.png)
+
+- *Metric Cards - OS Kube API Server*
+![OpenShift Kube API Server Metric Cards Before](.github/images/performance/many/thousand/kube-api-metric-before.png)
+
+- *CPU Usage Graph - OS etcd*
+![OpenShift etcd CPU Usage Before](.github/images/performance/many/thousand/etcd-cpu-before.png)
+
+- *Memory Usage Graph - OS etcd*
+![OpenShift etcd Memory Usage Before](.github/images/performance/many/thousand/etcd-mem-before.png)
+
+- *Metric Cards - OS etcd*
+![OpenShift etcd Metric Cards Before](.github/images/performance/many/thousand/etcd-metric-before.png)
+
+**After - Restarted with permissisons at 3:27 PM**
+All images captured ~5 minutes after controller started
+
+- *CPU Usage Graph - OS API Server*
+![OpenShift API Server CPU Usage After](.github/images/performance/many/thousand/os-api-cpu-after.png)
+
+- *Memory Usage Graph - OS API Server*
+![OpenShift API Server Memory Usage After](.github/images/performance/many/thousand/os-api-mem-after.png)
+
+- *Metric Cards - OS API Server*
+![OpenShift API Server Metric Cards After](.github/images/performance/many/thousand/os-api-metric-after.png)
+
+- *CPU Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server CPU Usage After](.github/images/performance/many/thousand/kube-api-cpu-after.png)
+
+- *Memory Usage Graph - OS Kube API Server*
+![OpenShift Kube API Server Memory Usage After](.github/images/performance/many/thousand/kube-api-mem-after.png)
+
+- *Metric Cards - OS Kube API Server*
+![OpenShift Kube API Server Metric Cards After](.github/images/performance/many/thousand/kube-api-metric-after.png)
+
+- *CPU Usage Graph - OS etcd*
+![OpenShift etcd CPU Usage After](.github/images/performance/many/thousand/etcd-cpu-after.png)
+
+- *Memory Usage Graph - OS etcd*
+![OpenShift etcd Memory Usage After](.github/images/performance/many/thousand/etcd-mem-after.png)
+
+- *Metric Cards - OS etcd*
+![OpenShift etcd Metric Cards After](.github/images/performance/many/thousand/etcd-metric-after.png)
+
+
+
 ## License
 
 Copyright 2022.
