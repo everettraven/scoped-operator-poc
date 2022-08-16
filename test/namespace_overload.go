@@ -20,7 +20,7 @@ func main() {
 	}
 
 	// modify this loop to adjust the namespaces created
-	for i := 100; i < 1000; i++ {
+	for i := 0; i < 10; i++ {
 		nsString := fmt.Sprintf("namespace-%d", i)
 		ns := &corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{

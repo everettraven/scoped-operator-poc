@@ -17,6 +17,7 @@ limitations under the License.
 package controllers
 
 import (
+	"fmt"
 	"reflect"
 	"time"
 
@@ -24,6 +25,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 
 	"context"
@@ -31,15 +33,23 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	scopecache "github.com/everettraven/scoped-cache-poc/pkg/cache"
 	cachev1alpha1 "github.com/example/memcached-operator/api/v1alpha1"
+	"github.com/go-logr/logr"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 )
 
 // MemcachedReconciler reconciles a Memcached object
 type MemcachedReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
+	Cache  cache.Cache
+	Ctrl   controller.Controller
 }
 
 //+kubebuilder:rbac:groups=cache.example.com,resources=memcacheds,verbs=get;list;watch;create;update;patch;delete
@@ -73,6 +83,12 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		}
 		// Error reading the object - requeue the request.
 		log.Error(err, "Failed to get Memcached")
+		return ctrl.Result{}, err
+	}
+
+	err = r.watchDeploymentForMemcached(ctx, memcached, log)
+	if err != nil {
+		log.Error(err, "failed to watch deployment")
 		return ctrl.Result{}, err
 	}
 
@@ -145,6 +161,9 @@ func (r *MemcachedReconciler) deploymentForMemcached(m *cachev1alpha1.Memcached)
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      m.Name,
 			Namespace: m.Namespace,
+			Labels: map[string]string{
+				"memcachedLabel": "memcached-" + m.Name,
+			},
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &replicas,
@@ -198,6 +217,71 @@ func (r *MemcachedReconciler) deploymentForMemcached(m *cachev1alpha1.Memcached)
 	return dep
 }
 
+func (r *MemcachedReconciler) watchDeploymentForMemcached(ctx context.Context, memcached *cachev1alpha1.Memcached, log logr.Logger) error {
+	// Create watch for the deployment with the ScopedCache
+	sc, ok := r.Cache.(*scopecache.ScopedCache)
+	if !ok {
+		err := fmt.Errorf("cache is not of type ScopedCache")
+		log.Error(err, "failed to get scoped cache")
+		return err
+	}
+	if ok {
+		log.Info("Creating cache for memcached CR")
+		memcachedCache, err := cache.New(
+			ctrl.GetConfigOrDie(),
+			cache.Options{
+				Namespace: memcached.GetNamespace(),
+				DefaultSelector: cache.ObjectSelector{
+					Label: labels.SelectorFromSet(labels.Set{
+						"memcachedLabel": "memcached-" + memcached.Name,
+					}),
+				},
+			},
+		)
+
+		if err != nil {
+			log.Error(err, "Failed to create cache")
+			return err
+		}
+
+		_, err = memcachedCache.GetInformerForKind(context.TODO(), appsv1.SchemeGroupVersion.WithKind("Deployment"))
+		if err != nil {
+			log.Error(err, "failed to get deployment informer")
+			return err
+		}
+
+		r.Ctrl.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
+			OwnerType:    &cachev1alpha1.Memcached{},
+			IsController: true,
+		})
+
+		// inf.AddEventHandler(cgcache.ResourceEventHandlerFuncs{
+		// 	AddFunc: func(obj interface{}) {
+		// 		fmt.Println("AddFunc() for Deployment!")
+		// 	},
+		// 	UpdateFunc: func(oldObj, newObj interface{}) {
+		// 		fmt.Println("UpdateFunc() for Deployment!")
+		// 	},
+		// 	DeleteFunc: func(obj interface{}) {
+		// 		fmt.Println("DeleteFunc() for Deployment!")
+		// 	},
+		// })
+
+		err = sc.AddResourceCache(ctx, memcached, memcachedCache)
+		if err != nil {
+			log.Error(err, "failed to add resource cache")
+			return err
+		}
+		log.Info("NS Resource Cache: ", fmt.Sprintf("%s", sc.GetResourceCache()), "something")
+
+		log.Info("Resource cache:", fmt.Sprintf("%s", sc.GetResourceCache()["default"]), "something")
+
+		log.Info("Cache: ", fmt.Sprintf("%s", sc.GetResourceCache()["default"][memcached]), "something")
+	}
+
+	return nil
+}
+
 // labelsForMemcached returns the labels for selecting the resources
 // belonging to the given memcached CR name.
 func labelsForMemcached(name string) map[string]string {
@@ -215,8 +299,14 @@ func getPodNames(pods []corev1.Pod) []string {
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *MemcachedReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
+	controller, err := ctrl.NewControllerManagedBy(mgr).
 		For(&cachev1alpha1.Memcached{}).
-		Owns(&appsv1.Deployment{}).
-		Complete(r)
+		Build(r)
+
+	if err != nil {
+		return err
+	}
+
+	r.Ctrl = controller
+	return nil
 }

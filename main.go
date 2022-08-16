@@ -23,17 +23,15 @@ import (
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"k8s.io/client-go/rest"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	"github.com/everettraven/scoped-informer-poc/pkg/scoped"
+	scopecache "github.com/everettraven/scoped-cache-poc/pkg/cache"
 	cachev1alpha1 "github.com/example/memcached-operator/api/v1alpha1"
 	"github.com/example/memcached-operator/controllers"
 	//+kubebuilder:scaffold:imports
@@ -86,11 +84,7 @@ func main() {
 		// if you are doing or is intended to do any operation such as perform cleanups
 		// after the manager stops then its usage might be unsafe.
 		// LeaderElectionReleaseOnCancel: true,
-		NewCache: func(config *rest.Config, opts cache.Options) (cache.Cache, error) {
-			// Set the custom cache
-			opts.ListerWatcherConfig = scoped.NewScopedListerWatcherConfiguration()
-			return cache.New(config, opts)
-		},
+		NewCache: scopecache.ScopedCacheBuilder(),
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -100,6 +94,7 @@ func main() {
 	if err = (&controllers.MemcachedReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
+		Cache:  mgr.GetCache(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Memcached")
 		os.Exit(1)
