@@ -5,8 +5,9 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
+ 
 
-# Make data base, printed on Mon Aug  8 09:04:47 2022
+# Make data base, printed on Wed Aug 17 09:03:31 2022
 
 # Variables
 
@@ -49,7 +50,6 @@ LSCOLORS = Gxfxcxdxbxegedabagacad
 # environment
 MAIL = /var/spool/mail/bpalmer
 # environment
- 
 XDG_DATA_DIRS = /home/bpalmer/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share/:/usr/share/
 # environment
 OLDPWD = /home/bpalmer
@@ -58,13 +58,13 @@ OLDPWD = /home/bpalmer
 # automatic
 %F = $(notdir $%)
 # environment
-VSCODE_CODE_CACHE_PATH = /home/bpalmer/.config/Code/CachedData/3b889b090b5ad5793f524b5d1d39fda662b96a2a
+VSCODE_CODE_CACHE_PATH = /home/bpalmer/.config/Code/CachedData/da76f93349a72022ca4670c1b84860304616aaa2
 # makefile (from 'Makefile', line 36)
 BUNDLE_IMG = $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
 # environment
 LANG = C
 # environment
-XAUTHORITY = /run/user/1000/.mutter-Xwaylandauth.6F22Q1
+XAUTHORITY = /run/user/1000/.mutter-Xwaylandauth.KAUSQ1
 # default
 .LOADED := 
 # default
@@ -104,7 +104,7 @@ MAKEFILE_LIST := Makefile
 # environment
 ZSH = /home/bpalmer/.oh-my-zsh
 # environment
-VSCODE_PID = 5929
+VSCODE_PID = 4860
 # environment
 XDG_SESSION_TYPE = wayland
 # automatic
@@ -112,7 +112,7 @@ XDG_SESSION_TYPE = wayland
 # makefile (from 'Makefile', line 32)
 IMAGE_TAG_BASE = bpalmer/scoped-operator-poc
 # environment
-SESSION_MANAGER = local/unix:@/tmp/.ICE-unix/4254,unix/unix:/tmp/.ICE-unix/4254
+SESSION_MANAGER = local/unix:@/tmp/.ICE-unix/2812,unix/unix:/tmp/.ICE-unix/2812
 # automatic
 *F = $(notdir $*)
 # makefile (from 'Makefile', line 219)
@@ -164,7 +164,7 @@ GOBIN = $(shell go env GOPATH)/bin
 # makefile (from 'Makefile', line 164)
 CONTROLLER_TOOLS_VERSION = v0.9.0
 # environment
-INVOCATION_ID = 953eb0b27d6e44a89593f4ad43cee6c8
+INVOCATION_ID = f4050dee2ac84b5f873e62cea5be7d5d
 # environment
 USERNAME = bpalmer
 # environment
@@ -194,7 +194,7 @@ GIO_LAUNCHED_DESKTOP_FILE = /usr/share/applications/code.desktop
 # makefile
 .DEFAULT_GOAL := all
 # environment
-SYSTEMD_EXEC_PID = 4291
+SYSTEMD_EXEC_PID = 2845
 # environment
 HISTCONTROL = ignoredups
 # environment
@@ -210,13 +210,13 @@ MAKE_VERSION := 4.3
 # makefile (from 'Makefile', line 210)
 OPM = $(shell which opm)
 # environment
-MANAGERPID = 4160
+MANAGERPID = 2728
 # environment
 which_declare = typeset -f
 # environment
 DEBUGINFOD_URLS = https://debuginfod.fedoraproject.org/ 
 # environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 5929
+GIO_LAUNCHED_DESKTOP_FILE_PID = 4860
 # environment
 PAGER = less
 # environment
@@ -226,7 +226,7 @@ XDG_RUNTIME_DIR = /run/user/1000
 # environment
 GOMODCACHE = /home/bpalmer/go/pkg/mod
 # environment
-JOURNAL_STREAM = 8:40766
+JOURNAL_STREAM = 8:39476
 # environment
 XDG_SESSION_CLASS = user
 # environment
@@ -240,7 +240,7 @@ ENVTEST = $(LOCALBIN)/setup-envtest
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # environment
-VSCODE_IPC_HOOK = /run/user/1000/vscode-954a9ce5-1.69.2-main.sock
+VSCODE_IPC_HOOK = /run/user/1000/vscode-954a9ce5-1.70.0-main.sock
 # environment
 GOPROXY = https://proxy.golang.org,direct
 # default
@@ -268,9 +268,9 @@ GDMSESSION = gnome
 
 # Directories
 
-# . (device 41, inode 4946997): 26 files, no impossibilities.
+# . (device 41, inode 4946997): 30 files, no impossibilities.
 
-# 26 files, no impossibilities in 1 directories.
+# 30 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -360,7 +360,6 @@ undeploy:
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
- 
 #  Last modified 2022-08-03 15:23:33.037939984
 #  File has been updated.
 #  Successfully updated.
@@ -421,6 +420,7 @@ bundle-push:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
+ 
 #  recipe to execute (from 'Makefile', line 195):
 	$(MAKE) docker-push IMG=$(BUNDLE_IMG)
 
@@ -557,12 +557,12 @@ catalog-push:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 57 / storage = 712 B / avg = 12 B
-# current buf: size = 8162 B / used = 712 B / count = 57 / avg = 12 B
+# strcache buffers: 1 (0) / strings = 61 / storage = 773 B / avg = 12 B
+# current buf: size = 8162 B / used = 773 B / count = 61 / avg = 12 B
 
-# strcache performance: lookups = 195 / hit rate = 70%
+# strcache performance: lookups = 199 / hit rate = 69%
 # hash-table stats:
-# Load=57/8192=1%, Rehash=0, Collisions=0/195=0%
-# Finished Make data base on Mon Aug  8 09:04:47 2022
+# Load=61/8192=1%, Rehash=0, Collisions=0/199=0%
+# Finished Make data base on Wed Aug 17 09:03:31 2022
 
  

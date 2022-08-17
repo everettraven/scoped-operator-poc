@@ -515,6 +515,40 @@ All images captured ~5 minutes after controller started
 ![OpenShift etcd Metric Cards After](.github/images/performance/many/thousand/etcd-metric-after.png)
 
 
+# Scoped Cache Testing
+
+## Cases
+1. Watch a resource across the cluster
+2. Watch a resource in a specific namespaces
+3. Watch a specific resource in a namespace
+
+To cover all these cases, operator should:
+1. Watch CRs at the cluster level
+2. Watch Deployments in namespaces where CRs are created
+3. Watch a Secret in a specific namespace
+
+
+## Demo
+
+1. Run `setup.sh` to:
+    - Delete existing KinD cluster
+    - Create a new KinD cluster
+    - Apply RBAC to give permissions to list all namespaces on the cluster
+    - Apply RBAC to give * permissions for Memcached resources on the cluster
+    - Create namespaces `allowed-one`, `allowed-two`, `denied`
+    - Apply RBAC to give * permissions for Deployment resources in the `allowed-one` and `allowed-two` namespaces
+    - Apply RBAC to give `get`, `list`, `watch` permissiosn for Pod resources in the `allowed-one` and `allowed-two` namespaces
+
+2. Run `redeploy.sh` to:
+    - Remove any existing deployments of the operator from the cluster
+    - Build the image for the operator
+    - Load the built image to the KinD cluster
+    - Deploy the operator on the cluster
+    - List the pods in the `scoped-memcached-operator-system` namespace so we can easily copy the pod name for when we take a look at the pod logs
+
+3. 
+
+
 
 ## License
 

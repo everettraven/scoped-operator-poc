@@ -13,4 +13,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: bpalmer/scoped-operator-poc
-  newTag: 0.0.1
+  newTag: scoped-cache

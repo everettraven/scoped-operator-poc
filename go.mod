@@ -3,7 +3,8 @@ module github.com/example/memcached-operator
 go 1.18
 
 require (
-	github.com/everettraven/scoped-cache-poc v0.0.0-20220811170914-57b9f170bc95
+	github.com/everettraven/scoped-cache-poc v0.0.0-20220817210308-8a6bc1a12387
+	github.com/go-logr/logr v1.2.3
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.19.0
 	k8s.io/api v0.24.3
@@ -14,7 +15,7 @@ require (
 
 // replace sigs.k8s.io/controller-runtime v0.12.3 => github.com/everettraven/ksigs-controller-runtime-fork v0.11.1-0.20220803175350-cbf61bd8bd58
 
-replace github.com/everettraven/scoped-cache-poc => ../scoped-cache-poc
+// replace github.com/everettraven/scoped-cache-poc => ../scoped-cache-poc
 
 require (
 	cloud.google.com/go v0.81.0 // indirect
@@ -33,7 +34,6 @@ require (
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
-	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/zapr v1.2.3 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.5 // indirect

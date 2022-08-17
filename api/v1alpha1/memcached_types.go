@@ -33,7 +33,14 @@ type MemcachedSpec struct {
 // MemcachedStatus defines the observed state of Memcached
 type MemcachedStatus struct {
 	// Nodes are the names of the memcached pods
-	Nodes []string `json:"nodes"`
+	Nodes []string       `json:"nodes,omitempty"`
+	State MemcachedState `json:"state"`
+}
+
+// MemcachedState defines the current status of a Memcached CR along with a message (i.e a status of "Failed" with a message "Could not create deployment...")
+type MemcachedState struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
 }
 
 //+kubebuilder:object:root=true
