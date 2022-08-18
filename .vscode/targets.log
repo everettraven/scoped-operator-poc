@@ -7,7 +7,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # There is NO WARRANTY, to the extent permitted by law.
  
 
-# Make data base, printed on Wed Aug 17 09:03:31 2022
+# Make data base, printed on Thu Aug 18 09:33:56 2022
 
 # Variables
 
@@ -51,8 +51,6 @@ LSCOLORS = Gxfxcxdxbxegedabagacad
 MAIL = /var/spool/mail/bpalmer
 # environment
 XDG_DATA_DIRS = /home/bpalmer/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share/:/usr/share/
-# environment
-OLDPWD = /home/bpalmer
 # automatic
 ^D = $(patsubst %/,%,$(dir $^))
 # automatic
@@ -64,7 +62,7 @@ BUNDLE_IMG = $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
 # environment
 LANG = C
 # environment
-XAUTHORITY = /run/user/1000/.mutter-Xwaylandauth.KAUSQ1
+XAUTHORITY = /run/user/1000/.mutter-Xwaylandauth.KR1JQ1
 # default
 .LOADED := 
 # default
@@ -104,7 +102,7 @@ MAKEFILE_LIST := Makefile
 # environment
 ZSH = /home/bpalmer/.oh-my-zsh
 # environment
-VSCODE_PID = 4860
+VSCODE_PID = 3072
 # environment
 XDG_SESSION_TYPE = wayland
 # automatic
@@ -112,7 +110,7 @@ XDG_SESSION_TYPE = wayland
 # makefile (from 'Makefile', line 32)
 IMAGE_TAG_BASE = bpalmer/scoped-operator-poc
 # environment
-SESSION_MANAGER = local/unix:@/tmp/.ICE-unix/2812,unix/unix:/tmp/.ICE-unix/2812
+SESSION_MANAGER = local/unix:@/tmp/.ICE-unix/1960,unix/unix:/tmp/.ICE-unix/1960
 # automatic
 *F = $(notdir $*)
 # makefile (from 'Makefile', line 219)
@@ -164,7 +162,7 @@ GOBIN = $(shell go env GOPATH)/bin
 # makefile (from 'Makefile', line 164)
 CONTROLLER_TOOLS_VERSION = v0.9.0
 # environment
-INVOCATION_ID = f4050dee2ac84b5f873e62cea5be7d5d
+INVOCATION_ID = 24cd176d4d0545359d9e2fc413685a53
 # environment
 USERNAME = bpalmer
 # environment
@@ -194,7 +192,7 @@ GIO_LAUNCHED_DESKTOP_FILE = /usr/share/applications/code.desktop
 # makefile
 .DEFAULT_GOAL := all
 # environment
-SYSTEMD_EXEC_PID = 2845
+SYSTEMD_EXEC_PID = 1993
 # environment
 HISTCONTROL = ignoredups
 # environment
@@ -210,13 +208,13 @@ MAKE_VERSION := 4.3
 # makefile (from 'Makefile', line 210)
 OPM = $(shell which opm)
 # environment
-MANAGERPID = 2728
+MANAGERPID = 1873
 # environment
 which_declare = typeset -f
 # environment
 DEBUGINFOD_URLS = https://debuginfod.fedoraproject.org/ 
 # environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 4860
+GIO_LAUNCHED_DESKTOP_FILE_PID = 3072
 # environment
 PAGER = less
 # environment
@@ -226,7 +224,7 @@ XDG_RUNTIME_DIR = /run/user/1000
 # environment
 GOMODCACHE = /home/bpalmer/go/pkg/mod
 # environment
-JOURNAL_STREAM = 8:39476
+JOURNAL_STREAM = 8:39108
 # environment
 XDG_SESSION_CLASS = user
 # environment
@@ -260,7 +258,7 @@ USE_IMAGE_DIGESTS = false
 # environment
 GDMSESSION = gnome
 # variable set hash-table stats:
-# Load=124/1024=12%, Rehash=0, Collisions=9/250=4%
+# Load=123/1024=12%, Rehash=0, Collisions=9/249=4%
 
 # Pattern-specific Variable Values
 
@@ -295,6 +293,7 @@ catalog-build: opm
 #  recipe to execute (from 'Makefile', line 231):
 	$(OPM) index add --container-tool docker --mode semver --tag $(CATALOG_IMG) --bundles $(BUNDLE_IMGS) $(FROM_INDEX_OPT)
 
+ 
 opm:
 #  Phony target (prerequisite of .PHONY).
 #  Implicit rule search has not been done.
@@ -420,7 +419,6 @@ bundle-push:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
- 
 #  recipe to execute (from 'Makefile', line 195):
 	$(MAKE) docker-push IMG=$(BUNDLE_IMG)
 
@@ -557,12 +555,12 @@ catalog-push:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 61 / storage = 773 B / avg = 12 B
-# current buf: size = 8162 B / used = 773 B / count = 61 / avg = 12 B
+# strcache buffers: 1 (0) / strings = 61 / storage = 778 B / avg = 12 B
+# current buf: size = 8162 B / used = 778 B / count = 61 / avg = 12 B
 
 # strcache performance: lookups = 199 / hit rate = 69%
 # hash-table stats:
 # Load=61/8192=1%, Rehash=0, Collisions=0/199=0%
-# Finished Make data base on Wed Aug 17 09:03:31 2022
+# Finished Make data base on Thu Aug 18 09:33:56 2022
 
  

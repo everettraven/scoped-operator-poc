@@ -522,11 +522,6 @@ All images captured ~5 minutes after controller started
 2. Watch a resource in a specific namespaces
 3. Watch a specific resource in a namespace
 
-To cover all these cases, operator should:
-1. Watch CRs at the cluster level
-2. Watch Deployments in namespaces where CRs are created
-3. Watch a Secret in a specific namespace
-
 
 ## Demo
 
@@ -546,9 +541,191 @@ To cover all these cases, operator should:
     - Deploy the operator on the cluster
     - List the pods in the `scoped-memcached-operator-system` namespace so we can easily copy the pod name for when we take a look at the pod logs
 
-3. 
+3. Get the logs by running:
+```
+kubectl -n scoped-memcached-operator-system logs <pod-name>
+```
+
+We should see that the operator has started successfully:
+```
+1.6608304693692005e+09  INFO    controller-runtime.metrics      Metrics server is starting to listen    {"addr": "127.0.0.1:8080"}
+1.660830469369386e+09   INFO    setup   starting manager
+1.6608304693696425e+09  INFO    Starting server {"kind": "health probe", "addr": "[::]:8081"}
+1.6608304693696718e+09  INFO    Starting server {"path": "/metrics", "kind": "metrics", "addr": "127.0.0.1:8080"}
+I0818 13:47:49.369663       1 leaderelection.go:248] attempting to acquire leader lease scoped-memcached-operator-system/86f835c3.example.com...
+I0818 13:47:49.373329       1 leaderelection.go:258] successfully acquired lease scoped-memcached-operator-system/86f835c3.example.com
+1.6608304693733532e+09  DEBUG   events  Normal  {"object": {"kind":"Lease","namespace":"scoped-memcached-operator-system","name":"86f835c3.example.com","uid":"ac82b4f7-a193-4d52-864b-315e1fc80ce1","apiVersion":"coordination.k8s.io/v1","resourceVersion":"564"}, "reason": "LeaderElection", "message": "scoped-memcached-operator-controller-manager-7b4c9bb485-7jlkh_666ab6d0-e194-43c8-8348-724608e1521e became leader"}
+1.6608304693735454e+09  INFO    Starting EventSource    {"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "source": "kind source: *v1alpha1.Memcached"}
+1.6608304693736055e+09  INFO    Starting Controller     {"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached"}
+1.660830469473995e+09   INFO    Starting workers        {"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "worker count": 1}
+```
+
+4. Create some `Memcached` resources in the `allowed-one` and `allowed-two` namespaces by running:
+```
+kubectl apply -f config/samples/cache_v1alpha1_memcached.yaml
+```
+
+5. Get the logs again:
+```
+kubectl -n scoped-memcached-operator-system logs <pod-name>
+```
+
+For each CR we should see that there are logs signifying that:
+- A cache has been created for the `Memcached` CR
+- 2 event sources (watches) have been started (one is for `Deployment`s created by the controller and one is for `Pod`s created from the `Deployment`s)
+- Attempt to get a deployment
+- Creation of a deployment
+
+The logs should look similar to:
+```
+1.6608306977001324e+09  INFO    Creating cache for memcached CR {"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-allowed-one","namespace":"allowed-one"}, "namespace": "allowed-one", "name": "memcached-sample-allowed-one", "reconcileID": "188d52ee-593c-4716-980f-b4fe500bdb6c", "CR UID:": "b2427753-f092-4e22-a633-4d39bea7a0c4"}
+1.660830697700437e+09   INFO    Starting EventSource    {"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "source": "informer source: 0xc0000a4640"}
+1.6608306978010592e+09  INFO    Starting EventSource    {"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "source": "informer source: 0xc0000a4780"}
+1.6608306978010962e+09  INFO    Getting Deployment      {"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-allowed-one","namespace":"allowed-one"}, "namespace": "allowed-one", "name": "memcached-sample-allowed-one", "reconcileID": "188d52ee-593c-4716-980f-b4fe500bdb6c"}
+1.660830697801139e+09   INFO    Creating a new Deployment       {"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-allowed-one","namespace":"allowed-one"}, "namespace": "allowed-one", "name": "memcached-sample-allowed-one", "reconcileID": "188d52ee-593c-4716-980f-b4fe500bdb6c", "Deployment.Namespace": "allowed-one", "Deployment.Name": "memcached-sample-allowed-one"}
+1.6608306978104348e+09  INFO    Creating cache for memcached CR {"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-allowed-two","namespace":"allowed-two"}, "namespace": "allowed-two", "name": "memcached-sample-allowed-two", "reconcileID": "9bdb2035-db34-412b-bf2f-1496df56c134", "CR UID:": "690a5864-af57-4e6a-a75a-efce861d09cf"}
+1.660830697810686e+09   INFO    Starting EventSource    {"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "source": "informer source: 0xc0001b0e60"}
+1.6608306978107378e+09  INFO    Starting EventSource    {"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "source": "informer source: 0xc0001b10e0"}
+1.6608306978107502e+09  INFO    Getting Deployment      {"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-allowed-two","namespace":"allowed-two"}, "namespace": "allowed-two", "name": "memcached-sample-allowed-two", "reconcileID": "9bdb2035-db34-412b-bf2f-1496df56c134"}
+1.6608306978107738e+09  INFO    Creating a new Deployment       {"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-allowed-two","namespace":"allowed-two"}, "namespace": "allowed-two", "name": "memcached-sample-allowed-two", "reconcileID": "9bdb2035-db34-412b-bf2f-1496df56c134", "Deployment.Namespace": "allowed-two", "Deployment.Name": "memcached-sample-allowed-two"}
+```
+
+As the deployments are spun up and reconciled, the deployment may be modified. This operator sets ownership on deployments and will reconcile the parent `Memcached` CR whenever a child deployment is modified. You may see a chunk of logs similar to (example truncated to only a couple logs for brevity):
+```
+1.6608307072214928e+09  INFO    Getting Deployment      {"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-allowed-one","namespace":"allowed-one"}, "namespace": "allowed-one", "name": "memcached-sample-allowed-one", "reconcileID": "fa336c14-f699-4f70-89d0-37631770441f"}
+1.660830707233768e+09   INFO    Getting Deployment      {"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-allowed-two","namespace":"allowed-two"}, "namespace": "allowed-two", "name": "memcached-sample-allowed-two", "reconcileID": "644fd96b-346b-47b8-8c36-784e1741bbbb"}
+```
+
+6. Check the namespaces to see that the proper deployments are created:
+```
+kubectl -n allowed-one get deploy
+```
+Output should look like:
+```
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
+memcached-sample-allowed-one   2/2     2            2           13m
+```
+
+```
+kubectl -n allowed-two get deploy
+```
+Output should look like:
+```
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
+memcached-sample-allowed-two   3/3     3            3           14m
+```
+
+7. Let's see what happens when we create a `Memcached` CR in a namespace that the operator does not have proper permissions in:
+
+Create a `Memcached` CR in the namespace `denied` by running:
+```
+cat << EOF | kubectl apply -f -
+apiVersion: cache.example.com/v1alpha1
+kind: Memcached
+metadata:
+  name: memcached-sample-denied
+  namespace: denied
+spec:
+  size: 1
+EOF
+```
+
+Check the logs, we should see:
+```
+1.6608487955810938e+09	INFO	Creating cache for memcached CR	{"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-denied","namespace":"denied"}, "namespace": "denied", "name": "memcached-sample-denied", "reconcileID": "865240aa-1eac-48d0-9a64-56c2eec66b88", "CR UID:": "b49142b4-cc50-4465-969c-7257049247b6"}
+1.660848795581366e+09	INFO	Starting EventSource	{"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "source": {}}
+1.6608487955813868e+09	INFO	Starting EventSource	{"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "source": {}}
+1.660848795581394e+09	INFO	Getting Deployment	{"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-denied","namespace":"denied"}, "namespace": "denied", "name": "memcached-sample-denied", "reconcileID": "865240aa-1eac-48d0-9a64-56c2eec66b88"}
+1.6608487971761699e+09	INFO	Not permitted to get Deployment	{"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-denied","namespace":"denied"}, "namespace": "denied", "name": "memcached-sample-denied", "reconcileID": "865240aa-1eac-48d0-9a64-56c2eec66b88"}
+```
+
+Checking the `Memcached` CR with `kubectl -n denied describe memcached` we can see the status:
+```
+Status:
+  State:
+    Message:  Not permitted to get Deployment: deployments.apps "memcached-sample-denied" is forbidden: Not permitted based on RBAC
+    Status:   Failed
+```
+
+8. Update the RBAC to give permissions to the denied namespace by running:
+```
+cat << EOF | kubectl apply -f - 
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: op-rolebinding-default
+  namespace: denied
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: scoped-operator-needs
+subjects:
+- kind: ServiceAccount
+  name: scoped-memcached-operator-controller-manager
+  namespace: scoped-memcached-operator-system
+EOF
+```
+
+After a little bit of time we should see in the logs:
+```
+1.66085439100725e+09	INFO	Creating a new Deployment	{"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-denied","namespace":"denied"}, "namespace": "denied", "name": "memcached-sample-denied", "reconcileID": "8bfc654a-e372-47c8-9be5-2cf89f654c34", "Deployment.Namespace": "denied", "Deployment.Name": "memcached-sample-denied"}
+1.66085439102921e+09	INFO	Getting Deployment	{"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-denied","namespace":"denied"}, "namespace": "denied", "name": "memcached-sample-denied", "reconcileID": "0bbc7b20-f392-45dc-a210-0d10ec58ff34"}
+1.660854392647686e+09	INFO	Getting Deployment	{"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-denied","namespace":"denied"}, "namespace": "denied", "name": "memcached-sample-denied", "reconcileID": "610f80fc-9d7e-46b1-ac25-5e5286fa97d2"}
+```
+
+We can see in the `Memcached` CR status that it has been successfully reconciled:
+```
+Status:
+  Nodes:
+    memcached-sample-denied-7685b99f49-tv2b8
+  State:
+    Message:  Deployment memcached-sample-denied successfully created
+    Status:   Succeeded
+```
+
+We can also see that the deployment is up and running by running `kubectl -n denied get deploy`:
+```
+NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
+memcached-sample-denied   1/1     1            1           71s
+```
+
+9. Now let's restrict access again by deleting the RBAC we applied to give permissions in the `denied` namespace:
+```
+kubectl -n denied delete rolebinding op-rolebinding-default
+```
+
+This change won't affect the existing `Memcached` CR since it has already been reconciled, but if we edit the existing `Memcached` CR or create a new one in the `denied` namespace we will see these logs start to pop up again:
+```
+1.6608546666716454e+09	INFO	Getting Deployment	{"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-denied","namespace":"denied"}, "namespace": "denied", "name": "memcached-sample-denied", "reconcileID": "b88c4f4f-4885-4bd4-a706-dc6b888dbca7"}
+1.6608546666883416e+09	INFO	Not permitted to get Deployment	{"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-denied","namespace":"denied"}, "namespace": "denied", "name": "memcached-sample-denied", "reconcileID": "b88c4f4f-4885-4bd4-a706-dc6b888dbca7"}
+```
+
+The `Memcached` CR status will again look like:
+```
+Status:
+  Nodes:
+    memcached-sample-denied-7685b99f49-tv2b8
+  State:
+    Message:  Not permitted to get Deployment: deployments.apps "memcached-sample-denied" is forbidden: Not permitted based on RBAC
+    Status:   Failed
+```
+
+In this example I edited the existing `Memcached` CR to kick off the reconciliation loop which is why the `Status.Nodes` field is still populated.
 
 
+10. Now lets delete the `Memcached` CR from the `denied` namespace entirely by running:
+```
+kubectl -n denied delete memcached memcached-sample-denied
+```
+
+Because the operator utilizes finalizers, our resource should not be deleted until the finalizer is removed. As part of the finalizer logic, we remove the cache for the `Memcached` CR that is being deleted. We should see in the logs:
+```
+1.6608559969812284e+09	INFO	Memcached is being deleted	{"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-denied","namespace":"denied"}, "namespace": "denied", "name": "memcached-sample-denied", "reconcileID": "a186a050-8ad7-4c92-855c-de59d7b371ea"}
+1.6608559969812474e+09	INFO	Removing ResourceCache	{"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-denied","namespace":"denied"}, "namespace": "denied", "name": "memcached-sample-denied", "reconcileID": "a186a050-8ad7-4c92-855c-de59d7b371ea", "CR UID:": "eda9cac4-c3c6-4da1-b920-f374748d40cb", "ResourceCache": {"eda9cac4-c3c6-4da1-b920-f374748d40cb":{"Scheme":{}}}}
+1.6608559969813137e+09	INFO	ResourceCache successfully removed	{"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-denied","namespace":"denied"}, "namespace": "denied", "name": "memcached-sample-denied", "reconcileID": "a186a050-8ad7-4c92-855c-de59d7b371ea", "CR UID:": "eda9cac4-c3c6-4da1-b920-f374748d40cb", "ResourceCache": {}}
+1.660855996986491e+09	INFO	Memcached resource not found. Ignoring since object must be deleted	{"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-denied","namespace":"denied"}, "namespace": "denied", "name": "memcached-sample-denied", "reconcileID": "aa1eef8d-90ac-428c-b434-d76abdcf167b"}
+1.6608560039957695e+09	INFO	Memcached resource not found. Ignoring since object must be deleted	{"controller": "memcached", "controllerGroup": "cache.example.com", "controllerKind": "Memcached", "memcached": {"name":"memcached-sample-denied","namespace":"denied"}, "namespace": "denied", "name": "memcached-sample-denied", "reconcileID": "f51f0c62-0237-468b-8e55-7a6d03a0d400"}
+```
 
 ## License
 

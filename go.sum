@@ -141,8 +141,8 @@ github.com/evanphx/json-patch v0.5.2/go.mod h1:ZWS5hhDbVDyob71nXKNL0+PWn6ToqBHMi
 github.com/evanphx/json-patch v4.11.0+incompatible/go.mod h1:50XU6AFN0ol/bzJsmQLiYLvXMP4fmwYFNcr97nuDLSk=
 github.com/evanphx/json-patch v4.12.0+incompatible h1:4onqiflcdA9EOZ4RxV643DvftH5pOlLGNtQ5lPWQu84=
 github.com/evanphx/json-patch v4.12.0+incompatible/go.mod h1:50XU6AFN0ol/bzJsmQLiYLvXMP4fmwYFNcr97nuDLSk=
-github.com/everettraven/scoped-cache-poc v0.0.0-20220817210308-8a6bc1a12387 h1:3lWiC7UiaI6hIKfC+RU/1oRpev+zAiQ9/rzLS2N863w=
-github.com/everettraven/scoped-cache-poc v0.0.0-20220817210308-8a6bc1a12387/go.mod h1:y5He0eDUGNFcYbIq32J84HDWdGbrI5zM9GKgT2j+fcA=
+github.com/everettraven/scoped-cache-poc v0.0.0-20220818203433-9e6914eccf3b h1:QG3lAZXxRYh0fCMrjjMOtACz3BLBh725aSFwkYEXCPA=
+github.com/everettraven/scoped-cache-poc v0.0.0-20220818203433-9e6914eccf3b/go.mod h1:y5He0eDUGNFcYbIq32J84HDWdGbrI5zM9GKgT2j+fcA=
 github.com/exponent-io/jsonpath v0.0.0-20151013193312-d6023ce2651d/go.mod h1:ZZMPRZwes7CROmyNKgQzC3XPs6L/G2EJLHddWejkmf4=
 github.com/fatih/camelcase v1.0.0/go.mod h1:yN2Sb0lFhZJUdVvtELVWefmrXpuZESvPmqwoZc+/fpc=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=

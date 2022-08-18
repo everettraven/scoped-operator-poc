@@ -7,7 +7,6 @@ GOBIN=/home/bpalmer/github/scoped-operator-poc/bin go install sigs.k8s.io/contro
  
 /home/bpalmer/github/scoped-operator-poc/bin/controller-gen object:headerFile="hack/boilerplate.go.txt" paths="./..."
 go fmt ./...
- 
 go vet ./...
 go build -o bin/manager main.go
 make: Leaving directory '/home/bpalmer/github/scoped-operator-poc'

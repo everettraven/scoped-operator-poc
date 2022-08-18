@@ -44,7 +44,6 @@ import (
 	scopecache "github.com/everettraven/scoped-cache-poc/pkg/cache"
 	cachev1alpha1 "github.com/example/memcached-operator/api/v1alpha1"
 	"github.com/go-logr/logr"
-	toolscache "k8s.io/client-go/tools/cache"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 )
 
@@ -53,9 +52,10 @@ const memcachedFinalizer = "cache.example.com/finalizer"
 // MemcachedReconciler reconciles a Memcached object
 type MemcachedReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
-	Cache  cache.Cache
-	Ctrl   controller.Controller
+	Scheme        *runtime.Scheme
+	Cache         cache.Cache
+	Ctrl          controller.Controller
+	watchesCancel context.CancelFunc
 }
 
 //+kubebuilder:rbac:groups=cache.example.com,resources=memcacheds,verbs=get;list;watch;create;update;patch;delete
@@ -90,8 +90,8 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, err
 	}
 
-	// Check if the Memcached instance is marked to be deleted, which is
-	// indicated by the deletion timestamp being set.
+	// // Check if the Memcached instance is marked to be deleted, which is
+	// // indicated by the deletion timestamp being set.
 	isMemcachedMarkedToBeDeleted := memcached.GetDeletionTimestamp() != nil
 	if isMemcachedMarkedToBeDeleted {
 		log.Info("Memcached is being deleted")
@@ -149,8 +149,11 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 				err := r.Status().Update(ctx, memcached)
 				if err != nil {
 					log.Error(err, "Failed to update Memcached status")
-					return ctrl.Result{}, err
+					return ctrl.Result{Requeue: true}, err
 				}
+
+				// Requeue after one minute in case RBAC changes
+				return ctrl.Result{RequeueAfter: 10 * time.Second}, err
 
 			} else {
 				log.Error(err, "Failed to create new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
@@ -159,6 +162,19 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		}
 		// Deployment created successfully - return and requeue
 		return ctrl.Result{Requeue: true}, nil
+	} else if err != nil && errors.IsForbidden(err) {
+		log.Info("Not permitted to get Deployment")
+		memcached.Status.State = cachev1alpha1.MemcachedState{
+			Status:  "Failed",
+			Message: fmt.Sprintf("Not permitted to get Deployment: %s", err),
+		}
+		err := r.Status().Update(ctx, memcached)
+		if err != nil {
+			log.Error(err, "Failed to update Memcached status")
+			return ctrl.Result{Requeue: true}, err
+		}
+		// Requeue after one minute in case RBAC changes
+		return ctrl.Result{RequeueAfter: 10 * time.Second}, err
 	} else if err != nil {
 		log.Error(err, "Failed to get Deployment")
 		return ctrl.Result{}, err
@@ -188,6 +204,20 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		client.MatchingLabels(labelsForMemcached(memcached.Name)),
 	}
 	if err = r.List(ctx, podList, listOpts...); err != nil {
+		if errors.IsForbidden(err) {
+			log.Info("Not permitted to list pods")
+			memcached.Status.State = cachev1alpha1.MemcachedState{
+				Status:  "Failed",
+				Message: fmt.Sprintf("Not permitted to list pods: %s", err),
+			}
+			err := r.Status().Update(ctx, memcached)
+			if err != nil {
+				log.Error(err, "Failed to update Memcached status")
+				return ctrl.Result{Requeue: true}, err
+			}
+			// Requeue after one minute in case RBAC changes
+			return ctrl.Result{RequeueAfter: 10 * time.Second}, err
+		}
 		log.Error(err, "Failed to list pods", "Memcached.Namespace", memcached.Namespace, "Memcached.Name", memcached.Name)
 		return ctrl.Result{}, err
 	}
@@ -199,7 +229,7 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		err := r.Status().Update(ctx, memcached)
 		if err != nil {
 			log.Error(err, "Failed to update Memcached status")
-			return ctrl.Result{}, err
+			return ctrl.Result{Requeue: true}, err
 		}
 	}
 
@@ -211,7 +241,7 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	err = r.Status().Update(ctx, memcached)
 	if err != nil {
 		log.Error(err, "Failed to update Memcached status")
-		return ctrl.Result{}, err
+		return ctrl.Result{Requeue: true}, err
 	}
 
 	return ctrl.Result{}, nil
@@ -272,31 +302,38 @@ func (r *MemcachedReconciler) watchesForMemcached(ctx context.Context, memcached
 				},
 			)
 
-			if err != nil {
-				log.Error(err, "Failed to create cache")
-				return err
-			}
-
 			err = sc.AddResourceCache(ctx, memcached, memcachedCache)
 			if err != nil {
 				log.Error(err, "failed to add resource cache")
 				return err
 			}
 
-			depInf, err := memcachedCache.GetInformerForKind(context.TODO(), appsv1.SchemeGroupVersion.WithKind("Deployment"))
 			if err != nil {
+				log.Error(err, "Failed to create cache")
 				return err
 			}
 
-			depi := depInf.(toolscache.SharedIndexInformer)
-			depi.SetWatchErrorHandler(
-				func(r *toolscache.Reflector, err error) {
-					//do nothing
-				},
-			)
+			// cancel old context to end old informers
+			r.watchesCancel()
+
+			// Create new context and cancelFunc
+			tempCtx, cancelFunc := context.WithCancel(context.Background())
+			r.watchesCancel = cancelFunc
+
+			// Get informer for deployments
+			depInf, err := sc.GetInformer(tempCtx, &appsv1.Deployment{})
+			if err != nil {
+				return fmt.Errorf("encountered an error getting deployment informer: %w", err)
+			}
+
+			// Get informer for pods
+			podInf, err := sc.GetInformer(tempCtx, &corev1.Pod{})
+			if err != nil {
+				return fmt.Errorf("encountered an error getting pod informer: %w", err)
+			}
 
 			// Create a watch on Deployments
-			err = r.Ctrl.Watch(&source.Informer{Informer: depi}, &handler.EnqueueRequestForOwner{
+			err = r.Ctrl.Watch(&source.Informer{Informer: depInf}, &handler.EnqueueRequestForOwner{
 				OwnerType:    &cachev1alpha1.Memcached{},
 				IsController: true,
 			})
@@ -305,19 +342,7 @@ func (r *MemcachedReconciler) watchesForMemcached(ctx context.Context, memcached
 				return err
 			}
 
-			podInf, err := memcachedCache.GetInformerForKind(context.TODO(), corev1.SchemeGroupVersion.WithKind("Pod"))
-			if err != nil {
-				return err
-			}
-
-			podi := podInf.(toolscache.SharedIndexInformer)
-			podi.SetWatchErrorHandler(
-				func(r *toolscache.Reflector, err error) {
-					//do nothing
-				},
-			)
-
-			err = r.Ctrl.Watch(&source.Informer{Informer: podi}, &handler.EnqueueRequestForOwner{
+			err = r.Ctrl.Watch(&source.Informer{Informer: podInf}, &handler.EnqueueRequestForOwner{
 				OwnerType:    &cachev1alpha1.Memcached{},
 				IsController: true,
 			})
@@ -365,5 +390,7 @@ func (r *MemcachedReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	r.Ctrl = controller
+
+	_, r.watchesCancel = context.WithCancel(context.TODO())
 	return nil
 }
