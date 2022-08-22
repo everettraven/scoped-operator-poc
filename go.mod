@@ -3,7 +3,7 @@ module github.com/example/memcached-operator
 go 1.18
 
 require (
-	github.com/everettraven/scoped-cache-poc v0.0.0-20220818203433-9e6914eccf3b
+	github.com/everettraven/scoped-cache-poc v0.0.0-20220822155217-1403b4b59596
 	github.com/go-logr/logr v1.2.3
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.19.0
