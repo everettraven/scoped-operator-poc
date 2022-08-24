@@ -19,6 +19,7 @@ package controllers
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -44,6 +45,7 @@ import (
 	scopecache "github.com/everettraven/scoped-cache-poc/pkg/cache"
 	cachev1alpha1 "github.com/example/memcached-operator/api/v1alpha1"
 	"github.com/go-logr/logr"
+	toolscache "k8s.io/client-go/tools/cache"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 )
 
@@ -56,6 +58,8 @@ type MemcachedReconciler struct {
 	Cache         cache.Cache
 	Ctrl          controller.Controller
 	watchesCancel context.CancelFunc
+	// store contexts used to start caches for a given memcached CR
+	// memcachedToCtx map[types.UID]context.Context
 }
 
 //+kubebuilder:rbac:groups=cache.example.com,resources=memcacheds,verbs=get;list;watch;create;update;patch;delete
@@ -99,7 +103,7 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			// Run finalization logic for memcachedFinalizer. If the
 			// finalization logic fails, don't remove the finalizer so
 			// that we can retry during the next reconciliation.
-			if err := r.finalizeMemcached(log, memcached); err != nil {
+			if err := r.removeCacheForMemcached(log, memcached); err != nil {
 				return ctrl.Result{}, err
 			}
 
@@ -173,6 +177,15 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			log.Error(err, "Failed to update Memcached status")
 			return ctrl.Result{Requeue: true}, err
 		}
+
+		//if we don't have the permissions we need, then we need to remove the ResourceCache that was created for this CR
+		log.Info("Removing cache for memcached CR due to invalid permissions")
+		err = r.removeCacheForMemcached(log, memcached)
+		if err != nil {
+			log.Error(err, "failed to remove cache for memcached CR")
+			return ctrl.Result{}, err
+		}
+
 		// Requeue after one minute in case RBAC changes
 		return ctrl.Result{RequeueAfter: 10 * time.Second}, err
 	} else if err != nil {
@@ -186,6 +199,7 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		log.Info("Deployment Spec.Replicas does not match Memcached CR Spec.Size -- Updating Deployment")
 		found.Spec.Replicas = &size
 		err = r.Update(ctx, found)
+		// In a real operator we would want to check for a Forbidden error here as well
 		if err != nil {
 			log.Error(err, "Failed to update Deployment", "Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
 			return ctrl.Result{}, err
@@ -215,6 +229,15 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 				log.Error(err, "Failed to update Memcached status")
 				return ctrl.Result{Requeue: true}, err
 			}
+
+			//if we don't have the permissions we need, then we need to remove the ResourceCache that was created for this CR
+			log.Info("Removing cache for memcached CR due to invalid permissions")
+			err = r.removeCacheForMemcached(log, memcached)
+			if err != nil {
+				log.Error(err, "failed to remove cache for memcached CR")
+				return ctrl.Result{}, err
+			}
+
 			// Requeue after one minute in case RBAC changes
 			return ctrl.Result{RequeueAfter: 10 * time.Second}, err
 		}
@@ -269,6 +292,8 @@ func (r *MemcachedReconciler) watchesForMemcached(ctx context.Context, memcached
 
 		// Only create the cache and watches for the CR if it does not already exist
 		if createCache {
+			ctx, cancelFunc := context.WithCancel(ctx)
+
 			log.Info("Creating cache for memcached CR", "CR UID:", memcached.GetUID())
 			cfg := ctrl.GetConfigOrDie()
 			addToMapper := func(baseMapper *meta.DefaultRESTMapper) {
@@ -283,6 +308,7 @@ func (r *MemcachedReconciler) watchesForMemcached(ctx context.Context, memcached
 			}))
 			if err != nil {
 				log.Error(err, "Failed to create rest mapper")
+				cancelFunc()
 				return err
 			}
 
@@ -301,39 +327,67 @@ func (r *MemcachedReconciler) watchesForMemcached(ctx context.Context, memcached
 					Mapper: mapper,
 				},
 			)
+			if err != nil {
+				log.Error(err, "failed to create cache")
+				cancelFunc()
+				return err
+			}
 
-			err = sc.AddResourceCache(ctx, memcached, memcachedCache)
+			err = sc.AddResourceCache(memcached, memcachedCache)
 			if err != nil {
 				log.Error(err, "failed to add resource cache")
+				cancelFunc()
 				return err
 			}
-
-			if err != nil {
-				log.Error(err, "Failed to create cache")
-				return err
-			}
-
-			// cancel old context to end old informers
-			r.watchesCancel()
-
-			// Create new context and cancelFunc
-			tempCtx, cancelFunc := context.WithCancel(context.Background())
-			r.watchesCancel = cancelFunc
 
 			// Get informer for deployments
-			depInf, err := sc.GetInformer(tempCtx, &appsv1.Deployment{})
+			depInf, err := r.Cache.GetInformer(ctx, &appsv1.Deployment{})
 			if err != nil {
+				cancelFunc()
 				return fmt.Errorf("encountered an error getting deployment informer: %w", err)
 			}
 
+			watchErrorHandler := func(ref *toolscache.Reflector, err error) {
+				if strings.Contains(err.Error(), "is forbidden") {
+					// close the context used to start a ResourceCache for the given Memcached CR
+					// at the very least this *should* stop the informers associated with the ResourceCache
+					cancelFunc()
+
+					// we should also attempt to remove the resource cache for this Memcached CR
+					// so the next time it is reconciled it will attempt to create a new ResourceCache and informers
+					log.Info("Removing resource cache for memcached resource due to invalid permissions", "memcached", memcached)
+					removeCacheErr := sc.RemoveResourceCache(memcached)
+					if removeCacheErr != nil {
+						log.Error(removeCacheErr, "failed to remove resource cache for memcached resource")
+					}
+				}
+			}
+
+			depI, _ := depInf.(*scopecache.ScopedInformer)
+			err = depI.SetWatchErrorHandler(watchErrorHandler)
+			if err != nil {
+				log.Error(err, "failed to SetWatchErrorHandler")
+				return err
+			}
+
 			// Get informer for pods
-			podInf, err := sc.GetInformer(tempCtx, &corev1.Pod{})
+			podInf, err := r.Cache.GetInformer(ctx, &corev1.Pod{})
 			if err != nil {
 				return fmt.Errorf("encountered an error getting pod informer: %w", err)
 			}
 
+			podI, _ := podInf.(*scopecache.ScopedInformer)
+			err = podI.SetWatchErrorHandler(watchErrorHandler)
+			if err != nil {
+				log.Error(err, "failed to SetWatchErrorHandler")
+				return err
+			}
+
+			// informers have been configured so lets start the ResourceCache
+			sc.StartResourceCache(ctx, memcached)
+
 			// Create a watch on Deployments
-			err = r.Ctrl.Watch(&source.Informer{Informer: depInf}, &handler.EnqueueRequestForOwner{
+			err = r.Ctrl.Watch(&source.Informer{Informer: depI}, &handler.EnqueueRequestForOwner{
 				OwnerType:    &cachev1alpha1.Memcached{},
 				IsController: true,
 			})
@@ -342,7 +396,8 @@ func (r *MemcachedReconciler) watchesForMemcached(ctx context.Context, memcached
 				return err
 			}
 
-			err = r.Ctrl.Watch(&source.Informer{Informer: podInf}, &handler.EnqueueRequestForOwner{
+			// Create a watch on Pods
+			err = r.Ctrl.Watch(&source.Informer{Informer: podI}, &handler.EnqueueRequestForOwner{
 				OwnerType:    &cachev1alpha1.Memcached{},
 				IsController: true,
 			})
@@ -356,7 +411,7 @@ func (r *MemcachedReconciler) watchesForMemcached(ctx context.Context, memcached
 	return nil
 }
 
-func (r *MemcachedReconciler) finalizeMemcached(log logr.Logger, m *cachev1alpha1.Memcached) error {
+func (r *MemcachedReconciler) removeCacheForMemcached(log logr.Logger, m *cachev1alpha1.Memcached) error {
 	// remove the cache and informers for this CR
 	sc, ok := r.Cache.(*scopecache.ScopedCache)
 	if !ok {
@@ -392,5 +447,6 @@ func (r *MemcachedReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Ctrl = controller
 
 	_, r.watchesCancel = context.WithCancel(context.TODO())
+	// r.memcachedToCtx = make(map[types.UID]context.Context)
 	return nil
 }
