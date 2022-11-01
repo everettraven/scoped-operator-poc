@@ -1,5 +1,31 @@
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: scoped-operator-needs
+rules:
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: op-rolebinding-default
@@ -7,11 +33,11 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: scoped-memcached-operator-manager-role
+  name: scoped-operator-needs
 subjects:
 - kind: ServiceAccount
   name: scoped-memcached-operator-controller-manager
-  namespace: default
+  namespace: scoped-memcached-operator-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -21,8 +47,22 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: scoped-memcached-operator-manager-role
+  name: scoped-operator-needs
 subjects:
 - kind: ServiceAccount
   name: scoped-memcached-operator-controller-manager
-  namespace: default
+  namespace: scoped-memcached-operator-system
+# ---
+# apiVersion: rbac.authorization.k8s.io/v1
+# kind: RoleBinding
+# metadata:
+#   name: op-rolebinding-default
+#   namespace: denied
+# roleRef:
+#   apiGroup: rbac.authorization.k8s.io
+#   kind: ClusterRole
+#   name: scoped-operator-needs
+# subjects:
+# - kind: ServiceAccount
+#   name: scoped-memcached-operator-controller-manager
+#   namespace: scoped-memcached-operator-system

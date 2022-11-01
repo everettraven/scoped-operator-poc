@@ -17,6 +17,7 @@ limitations under the License.
 package controllers
 
 import (
+	"fmt"
 	"reflect"
 	"time"
 
@@ -24,6 +25,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 
 	"context"
@@ -31,22 +33,26 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	telescopiacache "github.com/everettraven/telescopia/pkg/cache"
 	cachev1alpha1 "github.com/example/memcached-operator/api/v1alpha1"
 )
 
 // MemcachedReconciler reconciles a Memcached object
 type MemcachedReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme     *runtime.Scheme
+	Ctrl       controller.Controller
+	ScopeCache *telescopiacache.ScopedCache
 }
 
 //+kubebuilder:rbac:groups=cache.example.com,resources=memcacheds,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=cache.example.com,resources=memcacheds/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=cache.example.com,resources=memcacheds/finalizers,verbs=update
-//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -62,7 +68,9 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	// Fetch the Memcached instance
 	memcached := &cachev1alpha1.Memcached{}
-	err := r.Get(ctx, req.NamespacedName, memcached)
+	memcachedUnstruct := &unstructured.Unstructured{}
+	memcachedUnstruct.SetGroupVersionKind(cachev1alpha1.GroupVersion.WithKind("Memcached"))
+	err := r.Get(ctx, req.NamespacedName, memcachedUnstruct)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Request object not found, could have been deleted after reconcile request.
@@ -73,6 +81,11 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		}
 		// Error reading the object - requeue the request.
 		log.Error(err, "Failed to get Memcached")
+		return ctrl.Result{}, err
+	}
+
+	err = runtime.DefaultUnstructuredConverter.FromUnstructured(memcachedUnstruct.Object, memcached)
+	if err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -90,6 +103,13 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		}
 		// Deployment created successfully - return and requeue
 		return ctrl.Result{Requeue: true}, nil
+	} else if err != nil && telescopiacache.IsInformerNotFoundErr(err) {
+		err = r.createWatchesForMemcached(memcached)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		// Requeue after a bit to let the informers have some time to start up
+		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
 	} else if err != nil {
 		log.Error(err, "Failed to get Deployment")
 		return ctrl.Result{}, err
@@ -97,7 +117,8 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	// Ensure the deployment size is the same as the spec
 	size := memcached.Spec.Size
-	if *found.Spec.Replicas != size {
+	if found.Spec.Replicas != nil && *found.Spec.Replicas != size {
+		log.Info("Fixing Deployment.Spec.Replicas!")
 		found.Spec.Replicas = &size
 		err = r.Update(ctx, found)
 		if err != nil {
@@ -134,6 +155,42 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	return ctrl.Result{}, nil
+}
+
+func (r *MemcachedReconciler) createWatchesForMemcached(memcached *cachev1alpha1.Memcached) error {
+	fmt.Println("XXX createWatchedForMemcached")
+	deployWatch := &appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Namespace: memcached.GetNamespace()}}
+	deployWatch.SetGroupVersionKind(appsv1.SchemeGroupVersion.WithKind("Deployment"))
+	infOpts := telescopiacache.InformerOptions{
+		Gvk:       deployWatch.GroupVersionKind(),
+		Namespace: memcached.GetNamespace(),
+	}
+
+	if !r.ScopeCache.GvkHasInformer(infOpts) {
+		// Create our watches
+		err := r.Ctrl.Watch(&source.Kind{Type: deployWatch}, &handler.EnqueueRequestForOwner{OwnerType: &cachev1alpha1.Memcached{}, IsController: true})
+		if err != nil {
+			return err
+		}
+	}
+
+	podWatch := &corev1.Pod{}
+	podWatch.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("Pod"))
+	podWatch.SetNamespace(memcached.GetNamespace())
+	infOpts = telescopiacache.InformerOptions{
+		Gvk:       podWatch.GroupVersionKind(),
+		Namespace: memcached.GetNamespace(),
+	}
+
+	if !r.ScopeCache.GvkHasInformer(infOpts) {
+		// Create our watches
+		err := r.Ctrl.Watch(&source.Kind{Type: podWatch}, &handler.EnqueueRequestForOwner{OwnerType: &appsv1.Deployment{}})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // deploymentForMemcached returns a memcached Deployment object
@@ -215,8 +272,14 @@ func getPodNames(pods []corev1.Pod) []string {
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *MemcachedReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
+	controller, err := ctrl.NewControllerManagedBy(mgr).
 		For(&cachev1alpha1.Memcached{}).
-		Owns(&appsv1.Deployment{}).
-		Complete(r)
+		Build(r)
+
+	if err != nil {
+		return err
+	}
+
+	r.Ctrl = controller
+	return nil
 }

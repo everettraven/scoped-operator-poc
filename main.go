@@ -18,24 +18,33 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
+	"time"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
+
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/dynamic/dynamicinformer"
+	"k8s.io/client-go/informers"
+	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"k8s.io/client-go/rest"
 
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	"github.com/everettraven/scoped-informer-poc/pkg/scoped"
+	telescopiacache "github.com/everettraven/telescopia/pkg/cache"
+	"github.com/example/memcached-operator/api/v1alpha1"
 	cachev1alpha1 "github.com/example/memcached-operator/api/v1alpha1"
 	"github.com/example/memcached-operator/controllers"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -86,20 +95,55 @@ func main() {
 		// if you are doing or is intended to do any operation such as perform cleanups
 		// after the manager stops then its usage might be unsafe.
 		// LeaderElectionReleaseOnCancel: true,
-		NewCache: func(config *rest.Config, opts cache.Options) (cache.Cache, error) {
-			// Set the custom cache
-			opts.ListerWatcherConfig = scoped.NewScopedListerWatcherConfiguration()
-			return cache.New(config, opts)
-		},
+		NewCache: telescopiacache.ScopedCacheBuilder(telescopiacache.WithScopedInformerFactory(
+			func(gvr schema.GroupVersionResource, options ...informers.SharedInformerOption) (informers.GenericInformer, error) {
+				cli := kubernetes.NewForConfigOrDie(ctrl.GetConfigOrDie())
+				dynCli := dynamic.NewForConfigOrDie(ctrl.GetConfigOrDie())
+				resync := 10 * time.Second
+
+				infFact := informers.NewSharedInformerFactoryWithOptions(cli, resync, options...)
+				dynInfFact := dynamicinformer.NewDynamicSharedInformerFactory(dynCli, resync)
+
+				var inf informers.GenericInformer
+				var err error
+				switch gvr {
+				case corev1.SchemeGroupVersion.WithResource("pods"):
+					inf, err = infFact.ForResource(gvr)
+					if err != nil {
+						return nil, err
+					}
+				case appsv1.SchemeGroupVersion.WithResource("deployments"):
+					inf, err = infFact.ForResource(gvr)
+					if err != nil {
+						return nil, err
+					}
+				case v1alpha1.GroupVersion.WithResource("memcacheds"):
+					inf = dynInfFact.ForResource(gvr)
+					if err != nil {
+						return nil, err
+					}
+				default:
+					return nil, fmt.Errorf("resource should be one of [pods, deployments] and was %q", gvr.Resource)
+				}
+
+				return inf, nil
+			},
+		)),
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
 	}
 
+	scopeCache, ok := mgr.GetCache().(*telescopiacache.ScopedCache)
+	if !ok {
+		fmt.Println("XXX cache not scopedcache")
+	}
+
 	if err = (&controllers.MemcachedReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:     mgr.GetClient(),
+		Scheme:     mgr.GetScheme(),
+		ScopeCache: scopeCache,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Memcached")
 		os.Exit(1)
