@@ -5,13 +5,13 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
+ 
 
-# Make data base, printed on Tue Nov  1 09:27:54 2022
+# Make data base, printed on Wed Nov  2 09:11:06 2022
 
 # Variables
 
 # makefile (from 'Makefile', line 163)
- 
 KUSTOMIZE_VERSION = v3.8.7
 # environment
 GDK_BACKEND = x11
@@ -19,10 +19,12 @@ GDK_BACKEND = x11
 LC_ALL = C
 # environment
 NO_AT_BRIDGE = 1
+# environment
+GJS_DEBUG_OUTPUT = stderr
 # makefile (from 'Makefile', line 25)
 BUNDLE_METADATA_OPTS = $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 # environment
-VSCODE_CWD = /home/bpalmer/github/scoped-operator-poc
+VSCODE_CWD = /home/bpalmer
 # environment
 GDM_LANG = en_US.UTF-8
 # default
@@ -50,7 +52,7 @@ MAIL = /var/spool/mail/bpalmer
 # environment
 XDG_DATA_DIRS = /home/bpalmer/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share/:/usr/share/
 # environment
-OLDPWD = /home/bpalmer/github
+OLDPWD = /home/bpalmer
 # automatic
 ^D = $(patsubst %/,%,$(dir $^))
 # automatic
@@ -62,13 +64,11 @@ BUNDLE_IMG = $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
 # environment
 LANG = C
 # environment
-XAUTHORITY = /run/user/1000/.mutter-Xwaylandauth.TD90U1
+XAUTHORITY = /run/user/1000/.mutter-Xwaylandauth.U9MAV1
 # default
 .LOADED := 
 # default
 .INCLUDE_DIRS = /usr/include /usr/local/include /usr/include
-# environment
-GNOME_TERMINAL_SERVICE = :1.188
 # makefile
 MAKEFLAGS = pqrR
 # makefile (from 'Makefile', line 166)
@@ -104,7 +104,7 @@ MAKEFILE_LIST := Makefile
 # environment
 ZSH = /home/bpalmer/.oh-my-zsh
 # environment
-VSCODE_PID = 14044
+VSCODE_PID = 3727
 # environment
 XDG_SESSION_TYPE = wayland
 # automatic
@@ -112,7 +112,7 @@ XDG_SESSION_TYPE = wayland
 # makefile (from 'Makefile', line 32)
 IMAGE_TAG_BASE = bpalmer/scoped-operator-poc
 # environment
-SESSION_MANAGER = local/unix:@/tmp/.ICE-unix/3560,unix/unix:/tmp/.ICE-unix/3560
+SESSION_MANAGER = local/unix:@/tmp/.ICE-unix/1982,unix/unix:/tmp/.ICE-unix/1982
 # automatic
 *F = $(notdir $*)
 # makefile (from 'Makefile', line 219)
@@ -138,15 +138,15 @@ MAKECMDGOALS := all
 # environment
 XMODIFIERS = @im=ibus
 # environment
-SHLVL = 2
+GJS_DEBUG_TOPICS = JS ERROR;JS LOG
 # environment
-GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/8ac7d5a7_74b4_477f_9106_050afe81baa4
+SHLVL = 0
 # environment
 MAKELEVEL := 0
 # default
 MAKE = $(MAKE_COMMAND)
 # environment
-PATH = /usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/home/bpalmer/bin:/usr/local/go/bin:/home/bpalmer/go/bin:/home/bpalmer/.fzf/bin
+PATH = /usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/home/bpalmer/bin:/home/bpalmer/bin:/usr/local/go/bin:/home/bpalmer/go/bin:/home/bpalmer/.fzf/bin
 # makefile (from 'Makefile', line 158)
 KUSTOMIZE = $(LOCALBIN)/kustomize
 # environment
@@ -164,6 +164,8 @@ GOBIN = $(shell go env GOPATH)/bin
 # makefile (from 'Makefile', line 164)
 CONTROLLER_TOOLS_VERSION = v0.9.0
 # environment
+INVOCATION_ID = 7b65439688c2422bb44645b144f14068
+# environment
 USERNAME = bpalmer
 # environment
 GNOME_SETUP_DISPLAY = :1
@@ -174,7 +176,7 @@ XDG_CURRENT_DESKTOP = GNOME
 # makefile (from 'Makefile', line 50)
 IMG = $(IMAGE_TAG_BASE):$(VERSION)
 # environment
-LS_COLORS = rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=01;37;41:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=01;36:*.au=01;36:*.flac=01;36:*.m4a=01;36:*.mid=01;36:*.midi=01;36:*.mka=01;36:*.mp3=01;36:*.mpc=01;36:*.ogg=01;36:*.ra=01;36:*.wav=01;36:*.oga=01;36:*.opus=01;36:*.spx=01;36:*.xspf=01;36:
+LS_COLORS = 
 # automatic
 +F = $(notdir $+)
 # environment
@@ -187,10 +189,12 @@ ORIGINAL_XDG_CURRENT_DESKTOP = GNOME
 GNUMAKEFLAGS := 
 # environment
 LOGNAME = bpalmer
+# environment
+GIO_LAUNCHED_DESKTOP_FILE = /usr/share/applications/code.desktop
 # makefile
 .DEFAULT_GOAL := all
 # environment
-SYSTEMD_EXEC_PID = 3595
+SYSTEMD_EXEC_PID = 2015
 # environment
 HISTCONTROL = ignoredups
 # environment
@@ -206,9 +210,13 @@ MAKE_VERSION := 4.3
 # makefile (from 'Makefile', line 210)
 OPM = $(shell which opm)
 # environment
+MANAGERPID = 1894
+# environment
 which_declare = typeset -f
 # environment
 DEBUGINFOD_URLS = https://debuginfod.fedoraproject.org/ 
+# environment
+GIO_LAUNCHED_DESKTOP_FILE_PID = 3727
 # environment
 PAGER = less
 # environment
@@ -216,9 +224,9 @@ _ = /usr/bin/make
 # environment
 XDG_RUNTIME_DIR = /run/user/1000
 # environment
-COLORTERM = truecolor
-# environment
 GOMODCACHE = /home/bpalmer/go/pkg/mod
+# environment
+JOURNAL_STREAM = 8:34219
 # environment
 XDG_SESSION_CLASS = user
 # environment
@@ -234,8 +242,6 @@ ELECTRON_RUN_AS_NODE = 1
 # environment
 VSCODE_IPC_HOOK = /run/user/1000/vscode-954a9ce5-1.70.0-main.sock
 # environment
-TERM = xterm-256color
-# environment
 GOPROXY = https://proxy.golang.org,direct
 # default
 .RECIPEPREFIX := 
@@ -245,12 +251,6 @@ GOPROXY = https://proxy.golang.org,direct
 SUFFIXES := 
 # makefile (from 'Makefile', line 153)
 LOCALBIN = $(shell pwd)/bin
-# environment
-VSCODE_CLI = 1
-# environment
-ELECTRON_NO_ATTACH_CONSOLE = 1
-# environment
-VTE_VERSION = 6602
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell nocomment grouped-target extra-prereqs archives jobserver output-sync check-symlink guile load
 # environment
@@ -260,7 +260,7 @@ USE_IMAGE_DIGESTS = false
 # environment
 GDMSESSION = gnome
 # variable set hash-table stats:
-# Load=124/1024=12%, Rehash=0, Collisions=15/250=6%
+# Load=124/1024=12%, Rehash=0, Collisions=9/250=4%
 
 # Pattern-specific Variable Values
 
@@ -268,9 +268,9 @@ GDMSESSION = gnome
 
 # Directories
 
-# . (device 41, inode 4946997): 28 files, no impossibilities.
+# . (device 41, inode 4946997): 30 files, no impossibilities.
 
-# 28 files, no impossibilities in 1 directories.
+# 30 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -326,6 +326,7 @@ generate: controller-gen
 # ? := controller-gen
 # automatic
 # | := 
+ 
 # variable set hash-table stats:
 # Load=9/32=28%, Rehash=0, Collisions=2/17=12%
 #  recipe to execute (from 'Makefile', line 95):
@@ -381,7 +382,6 @@ uninstall: manifests kustomize
 /home/bpalmer/github/scoped-operator-poc/bin/controller-gen: /home/bpalmer/github/scoped-operator-poc/bin
 #  Implicit rule search has not been done.
 #  Last modified 2022-08-03 15:24:12.816969337
- 
 #  File has been updated.
 #  Successfully updated.
 #  recipe to execute (from 'Makefile', line 175):
@@ -557,12 +557,12 @@ catalog-push:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 59 / storage = 757 B / avg = 12 B
-# current buf: size = 8162 B / used = 757 B / count = 59 / avg = 12 B
+# strcache buffers: 1 (0) / strings = 61 / storage = 778 B / avg = 12 B
+# current buf: size = 8162 B / used = 778 B / count = 61 / avg = 12 B
 
-# strcache performance: lookups = 197 / hit rate = 70%
+# strcache performance: lookups = 199 / hit rate = 69%
 # hash-table stats:
-# Load=59/8192=1%, Rehash=0, Collisions=0/197=0%
-# Finished Make data base on Tue Nov  1 09:27:54 2022
+# Load=61/8192=1%, Rehash=0, Collisions=0/199=0%
+# Finished Make data base on Wed Nov  2 09:11:06 2022
 
  

@@ -24,6 +24,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
@@ -93,23 +94,57 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	found := &appsv1.Deployment{}
 	err = r.Get(ctx, types.NamespacedName{Name: memcached.Name, Namespace: memcached.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
+		log.Info("Deployment not found - Creating one!", "error", err)
 		// Define a new deployment
 		dep := r.deploymentForMemcached(memcached)
 		log.Info("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
 		err = r.Create(ctx, dep)
 		if err != nil {
-			log.Error(err, "Failed to create new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
-			return ctrl.Result{}, err
+			if errors.IsForbidden(err) {
+				log.Info("Not permitted to create new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
+				meta.SetStatusCondition(&memcached.Status.Conditions, metav1.Condition{
+					Type:    "Successful",
+					Status:  metav1.ConditionFalse,
+					Reason:  "NotPermitted",
+					Message: fmt.Sprintf("Not permitted to create new Deployment: %s", err),
+				})
+				err := r.Status().Update(ctx, memcached)
+				if err != nil {
+					log.Error(err, "Failed to update Memcached status")
+					return ctrl.Result{Requeue: true}, err
+				}
+
+				// Requeue after one minute in case RBAC changes
+				return ctrl.Result{RequeueAfter: 10 * time.Second}, err
+			} else {
+				log.Error(err, "Failed to create new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
+				return ctrl.Result{}, err
+			}
 		}
 		// Deployment created successfully - return and requeue
 		return ctrl.Result{Requeue: true}, nil
 	} else if err != nil && telescopiacache.IsInformerNotFoundErr(err) {
-		err = r.createWatchesForMemcached(memcached)
+		log.Info("Informer not found for deployments - creating one!", "error", err)
+		err = r.createDeploymentWatchForMemcached(memcached)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
 		// Requeue after a bit to let the informers have some time to start up
 		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
+	} else if err != nil && errors.IsForbidden(err) {
+		log.Info("Not permitted to get Deployments")
+		meta.SetStatusCondition(&memcached.Status.Conditions, metav1.Condition{
+			Type:    "Successful",
+			Status:  metav1.ConditionFalse,
+			Reason:  "NotPermitted",
+			Message: fmt.Sprintf("Not permitted to get Deployment: %s", err),
+		})
+		err := r.Status().Update(ctx, memcached)
+		if err != nil {
+			log.Error(err, "Failed to update Memcached status")
+			return ctrl.Result{Requeue: true}, err
+		}
+		return ctrl.Result{}, err
 	} else if err != nil {
 		log.Error(err, "Failed to get Deployment")
 		return ctrl.Result{}, err
@@ -139,6 +174,31 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		client.MatchingLabels(labelsForMemcached(memcached.Name)),
 	}
 	if err = r.List(ctx, podList, listOpts...); err != nil {
+		if errors.IsForbidden(err) {
+			log.Info("Not permitted to list pods")
+			meta.SetStatusCondition(&memcached.Status.Conditions, metav1.Condition{
+				Type:    "Successful",
+				Status:  metav1.ConditionFalse,
+				Reason:  "NotPermitted",
+				Message: fmt.Sprintf("Not permitted to list pods: %s", err),
+			})
+			err := r.Status().Update(ctx, memcached)
+			if err != nil {
+				log.Error(err, "Failed to update Memcached status")
+				return ctrl.Result{Requeue: true}, err
+			}
+		}
+
+		if telescopiacache.IsInformerNotFoundErr(err) {
+			log.Info("Informer not found for pods - creating one!", "error", err)
+			err = r.createPodWatchForMemcached(memcached)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+			// Requeue after a bit to let the informers have some time to start up
+			return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
+		}
+
 		log.Error(err, "Failed to list pods", "Memcached.Namespace", memcached.Namespace, "Memcached.Name", memcached.Name)
 		return ctrl.Result{}, err
 	}
@@ -157,8 +217,7 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	return ctrl.Result{}, nil
 }
 
-func (r *MemcachedReconciler) createWatchesForMemcached(memcached *cachev1alpha1.Memcached) error {
-	fmt.Println("XXX createWatchedForMemcached")
+func (r *MemcachedReconciler) createDeploymentWatchForMemcached(memcached *cachev1alpha1.Memcached) error {
 	deployWatch := &appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Namespace: memcached.GetNamespace()}}
 	deployWatch.SetGroupVersionKind(appsv1.SchemeGroupVersion.WithKind("Deployment"))
 	infOpts := telescopiacache.InformerOptions{
@@ -174,10 +233,14 @@ func (r *MemcachedReconciler) createWatchesForMemcached(memcached *cachev1alpha1
 		}
 	}
 
+	return nil
+}
+
+func (r *MemcachedReconciler) createPodWatchForMemcached(memcached *cachev1alpha1.Memcached) error {
 	podWatch := &corev1.Pod{}
 	podWatch.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("Pod"))
 	podWatch.SetNamespace(memcached.GetNamespace())
-	infOpts = telescopiacache.InformerOptions{
+	infOpts := telescopiacache.InformerOptions{
 		Gvk:       podWatch.GroupVersionKind(),
 		Namespace: memcached.GetNamespace(),
 	}
