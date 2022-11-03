@@ -35,13 +35,17 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	telescopiacache "github.com/everettraven/telescopia/pkg/cache"
 	cachev1alpha1 "github.com/example/memcached-operator/api/v1alpha1"
+	"github.com/go-logr/logr"
 )
+
+const memcachedFinalizer = "cache.example.com/finalizer"
 
 // MemcachedReconciler reconciles a Memcached object
 type MemcachedReconciler struct {
@@ -90,6 +94,60 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, err
 	}
 
+	// TODO: Add a finalizer step and make removal of corresponding informers part of finalizer logic
+	// Check if the Memcached instance is marked to be deleted, which is
+	// indicated by the deletion timestamp being set.
+	isMemcachedMarkedToBeDeleted := memcached.GetDeletionTimestamp() != nil
+	if isMemcachedMarkedToBeDeleted {
+		if controllerutil.ContainsFinalizer(memcached, memcachedFinalizer) {
+			// Run finalization logic for memcachedFinalizer. If the
+			// finalization logic fails, don't remove the finalizer so
+			// that we can retry during the next reconciliation.
+			if err := r.finalizeMemcached(log, memcached); err != nil {
+				return ctrl.Result{}, err
+			}
+
+			// Remove memcachedFinalizer. Once all finalizers have been
+			// removed, the object will be deleted.
+			controllerutil.RemoveFinalizer(memcached, memcachedFinalizer)
+			err := r.Update(ctx, memcached)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+		return ctrl.Result{}, nil
+	}
+
+	// Add finalizer for this CR
+	if !controllerutil.ContainsFinalizer(memcached, memcachedFinalizer) {
+		controllerutil.AddFinalizer(memcached, memcachedFinalizer)
+		err = r.Update(ctx, memcached)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
+	// attempt to create the informers
+	created, err := r.createDeploymentWatchForMemcached(memcached)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	if created {
+		// Requeue after a bit to let the informers have some time to start up
+		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
+	}
+
+	created, err = r.createPodWatchForMemcached(memcached)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	if created {
+		// Requeue after a bit to let the informers have some time to start up
+		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
+	}
+
 	// Check if the deployment already exists, if not create a new one
 	found := &appsv1.Deployment{}
 	err = r.Get(ctx, types.NamespacedName{Name: memcached.Name, Namespace: memcached.Namespace}, found)
@@ -125,7 +183,7 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{Requeue: true}, nil
 	} else if err != nil && telescopiacache.IsInformerNotFoundErr(err) {
 		log.Info("Informer not found for deployments - creating one!", "error", err)
-		err = r.createDeploymentWatchForMemcached(memcached)
+		_, err = r.createDeploymentWatchForMemcached(memcached)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
@@ -144,6 +202,9 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			log.Error(err, "Failed to update Memcached status")
 			return ctrl.Result{Requeue: true}, err
 		}
+
+		r.cleanWatches(memcached)
+
 		return ctrl.Result{}, err
 	} else if err != nil {
 		log.Error(err, "Failed to get Deployment")
@@ -191,7 +252,7 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 		if telescopiacache.IsInformerNotFoundErr(err) {
 			log.Info("Informer not found for pods - creating one!", "error", err)
-			err = r.createPodWatchForMemcached(memcached)
+			_, err = r.createPodWatchForMemcached(memcached)
 			if err != nil {
 				return ctrl.Result{}, err
 			}
@@ -214,46 +275,84 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		}
 	}
 
+	meta.SetStatusCondition(&memcached.Status.Conditions, metav1.Condition{
+		Type:    "Successful",
+		Status:  metav1.ConditionTrue,
+		Reason:  "ReconcileSucceeded",
+		Message: fmt.Sprintf("Memcached %q successfully reconciled", client.ObjectKeyFromObject(memcached)),
+	})
+	err = r.Status().Update(ctx, memcached)
+	if err != nil {
+		log.Error(err, "Failed to update Memcached status")
+		return ctrl.Result{Requeue: true}, err
+	}
+
+	fmt.Println("Current ScopedCache State:")
+	r.ScopeCache.PrintCache()
+
 	return ctrl.Result{}, nil
 }
 
-func (r *MemcachedReconciler) createDeploymentWatchForMemcached(memcached *cachev1alpha1.Memcached) error {
-	deployWatch := &appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Namespace: memcached.GetNamespace()}}
+func watchDeploy(memcached *cachev1alpha1.Memcached) *appsv1.Deployment {
+	deployWatch := &appsv1.Deployment{}
+	deployWatch.SetNamespace(memcached.GetNamespace())
 	deployWatch.SetGroupVersionKind(appsv1.SchemeGroupVersion.WithKind("Deployment"))
+	deployWatch.SetName(fmt.Sprintf("memcached-deploywatch-%s", memcached.GetUID()))
+	deployWatch.SetLabels(labelsForMemcached(memcached.Name))
+
+	return deployWatch
+}
+
+func (r *MemcachedReconciler) createDeploymentWatchForMemcached(memcached *cachev1alpha1.Memcached) (bool, error) {
+	created := false
+	deployWatch := watchDeploy(memcached)
 	infOpts := telescopiacache.InformerOptions{
 		Gvk:       deployWatch.GroupVersionKind(),
 		Namespace: memcached.GetNamespace(),
+		Key:       fmt.Sprintf("scopedcache-getinformer-%s", telescopiacache.HashObject(deployWatch)),
 	}
 
-	if !r.ScopeCache.GvkHasInformer(infOpts) {
+	if !r.ScopeCache.HasInformer(infOpts) {
+		created = true
 		// Create our watches
 		err := r.Ctrl.Watch(&source.Kind{Type: deployWatch}, &handler.EnqueueRequestForOwner{OwnerType: &cachev1alpha1.Memcached{}, IsController: true})
 		if err != nil {
-			return err
+			return false, err
 		}
 	}
 
-	return nil
+	return created, nil
 }
 
-func (r *MemcachedReconciler) createPodWatchForMemcached(memcached *cachev1alpha1.Memcached) error {
+func watchPod(memcached *cachev1alpha1.Memcached) *corev1.Pod {
 	podWatch := &corev1.Pod{}
 	podWatch.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("Pod"))
 	podWatch.SetNamespace(memcached.GetNamespace())
+	podWatch.SetName(fmt.Sprintf("memcached-podwatch-%s", memcached.GetUID()))
+	podWatch.SetLabels(labelsForMemcached(memcached.Name))
+
+	return podWatch
+}
+
+func (r *MemcachedReconciler) createPodWatchForMemcached(memcached *cachev1alpha1.Memcached) (bool, error) {
+	created := false
+	podWatch := watchPod(memcached)
 	infOpts := telescopiacache.InformerOptions{
 		Gvk:       podWatch.GroupVersionKind(),
 		Namespace: memcached.GetNamespace(),
+		Key:       fmt.Sprintf("scopedcache-getinformer-%s", telescopiacache.HashObject(podWatch)),
 	}
 
-	if !r.ScopeCache.GvkHasInformer(infOpts) {
+	if !r.ScopeCache.HasInformer(infOpts) {
+		created = true
 		// Create our watches
 		err := r.Ctrl.Watch(&source.Kind{Type: podWatch}, &handler.EnqueueRequestForOwner{OwnerType: &appsv1.Deployment{}})
 		if err != nil {
-			return err
+			return false, err
 		}
 	}
 
-	return nil
+	return created, nil
 }
 
 // deploymentForMemcached returns a memcached Deployment object
@@ -265,6 +364,7 @@ func (r *MemcachedReconciler) deploymentForMemcached(m *cachev1alpha1.Memcached)
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      m.Name,
 			Namespace: m.Namespace,
+			Labels:    ls,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &replicas,
@@ -316,6 +416,40 @@ func (r *MemcachedReconciler) deploymentForMemcached(m *cachev1alpha1.Memcached)
 	// Set Memcached instance as the owner and controller
 	ctrl.SetControllerReference(m, dep, r.Scheme)
 	return dep
+}
+
+func (r *MemcachedReconciler) cleanWatches(memcached *cachev1alpha1.Memcached) {
+	fmt.Println("Cache Before Removals")
+	r.ScopeCache.PrintCache()
+
+	// remove the deployment informer for the Memcached object
+	deployWatch := watchDeploy(memcached)
+	infOpts := telescopiacache.InformerOptions{
+		Gvk:       deployWatch.GroupVersionKind(),
+		Key:       fmt.Sprintf("scopedcache-getinformer-%s", telescopiacache.HashObject(deployWatch)),
+		Dependent: &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{UID: types.UID(telescopiacache.HashObject(deployWatch))}},
+		Namespace: deployWatch.GetNamespace(),
+	}
+	r.ScopeCache.RemoveInformer(infOpts, false)
+
+	// remove the pod informer for the Memcached object
+	podWatch := watchPod(memcached)
+	infOpts = telescopiacache.InformerOptions{
+		Gvk:       podWatch.GroupVersionKind(),
+		Key:       fmt.Sprintf("scopedcache-getinformer-%s", telescopiacache.HashObject(podWatch)),
+		Dependent: &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{UID: types.UID(telescopiacache.HashObject(podWatch))}},
+		Namespace: podWatch.GetNamespace(),
+	}
+	r.ScopeCache.RemoveInformer(infOpts, false)
+
+	fmt.Println("Cache After Removal")
+	r.ScopeCache.PrintCache()
+}
+
+func (r *MemcachedReconciler) finalizeMemcached(reqLogger logr.Logger, m *cachev1alpha1.Memcached) error {
+	r.cleanWatches(m)
+	reqLogger.Info("Successfully finalized memcached")
+	return nil
 }
 
 // labelsForMemcached returns the labels for selecting the resources

@@ -5,9 +5,8 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
- 
 
-# Make data base, printed on Wed Nov  2 09:11:06 2022
+# Make data base, printed on Thu Nov  3 09:38:15 2022
 
 # Variables
 
@@ -24,7 +23,7 @@ GJS_DEBUG_OUTPUT = stderr
 # makefile (from 'Makefile', line 25)
 BUNDLE_METADATA_OPTS = $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 # environment
-VSCODE_CWD = /home/bpalmer
+VSCODE_CWD = /home/bpalmer/github/scoped-operator-poc
 # environment
 GDM_LANG = en_US.UTF-8
 # default
@@ -64,17 +63,20 @@ BUNDLE_IMG = $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
 # environment
 LANG = C
 # environment
-XAUTHORITY = /run/user/1000/.mutter-Xwaylandauth.U9MAV1
+XAUTHORITY = /run/user/1000/.mutter-Xwaylandauth.9CJYU1
 # default
 .LOADED := 
 # default
 .INCLUDE_DIRS = /usr/include /usr/local/include /usr/include
+# environment
+GNOME_TERMINAL_SERVICE = :1.171
 # makefile
 MAKEFLAGS = pqrR
 # makefile (from 'Makefile', line 166)
 KUSTOMIZE_INSTALL_SCRIPT = "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 # makefile
 CURDIR := /home/bpalmer/github/scoped-operator-poc
+ 
 # environment
 APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
 # environment
@@ -104,7 +106,7 @@ MAKEFILE_LIST := Makefile
 # environment
 ZSH = /home/bpalmer/.oh-my-zsh
 # environment
-VSCODE_PID = 3727
+VSCODE_PID = 3695
 # environment
 XDG_SESSION_TYPE = wayland
 # automatic
@@ -112,7 +114,7 @@ XDG_SESSION_TYPE = wayland
 # makefile (from 'Makefile', line 32)
 IMAGE_TAG_BASE = bpalmer/scoped-operator-poc
 # environment
-SESSION_MANAGER = local/unix:@/tmp/.ICE-unix/1982,unix/unix:/tmp/.ICE-unix/1982
+SESSION_MANAGER = local/unix:@/tmp/.ICE-unix/1961,unix/unix:/tmp/.ICE-unix/1961
 # automatic
 *F = $(notdir $*)
 # makefile (from 'Makefile', line 219)
@@ -140,13 +142,15 @@ XMODIFIERS = @im=ibus
 # environment
 GJS_DEBUG_TOPICS = JS ERROR;JS LOG
 # environment
-SHLVL = 0
+SHLVL = 2
+# environment
+GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/2279eef7_3faf_4e97_a264_ff73d72c368f
 # environment
 MAKELEVEL := 0
 # default
 MAKE = $(MAKE_COMMAND)
 # environment
-PATH = /usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/home/bpalmer/bin:/home/bpalmer/bin:/usr/local/go/bin:/home/bpalmer/go/bin:/home/bpalmer/.fzf/bin
+PATH = /usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/home/bpalmer/bin:/usr/local/go/bin:/home/bpalmer/go/bin:/home/bpalmer/.fzf/bin
 # makefile (from 'Makefile', line 158)
 KUSTOMIZE = $(LOCALBIN)/kustomize
 # environment
@@ -164,7 +168,7 @@ GOBIN = $(shell go env GOPATH)/bin
 # makefile (from 'Makefile', line 164)
 CONTROLLER_TOOLS_VERSION = v0.9.0
 # environment
-INVOCATION_ID = 7b65439688c2422bb44645b144f14068
+INVOCATION_ID = 1dc785f2edd34088972280f74f9e322b
 # environment
 USERNAME = bpalmer
 # environment
@@ -176,7 +180,7 @@ XDG_CURRENT_DESKTOP = GNOME
 # makefile (from 'Makefile', line 50)
 IMG = $(IMAGE_TAG_BASE):$(VERSION)
 # environment
-LS_COLORS = 
+LS_COLORS = rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=01;37;41:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=01;36:*.au=01;36:*.flac=01;36:*.m4a=01;36:*.mid=01;36:*.midi=01;36:*.mka=01;36:*.mp3=01;36:*.mpc=01;36:*.ogg=01;36:*.ra=01;36:*.wav=01;36:*.oga=01;36:*.opus=01;36:*.spx=01;36:*.xspf=01;36:
 # automatic
 +F = $(notdir $+)
 # environment
@@ -194,7 +198,7 @@ GIO_LAUNCHED_DESKTOP_FILE = /usr/share/applications/code.desktop
 # makefile
 .DEFAULT_GOAL := all
 # environment
-SYSTEMD_EXEC_PID = 2015
+SYSTEMD_EXEC_PID = 1993
 # environment
 HISTCONTROL = ignoredups
 # environment
@@ -210,13 +214,13 @@ MAKE_VERSION := 4.3
 # makefile (from 'Makefile', line 210)
 OPM = $(shell which opm)
 # environment
-MANAGERPID = 1894
+MANAGERPID = 1872
 # environment
 which_declare = typeset -f
 # environment
 DEBUGINFOD_URLS = https://debuginfod.fedoraproject.org/ 
 # environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 3727
+GIO_LAUNCHED_DESKTOP_FILE_PID = 3695
 # environment
 PAGER = less
 # environment
@@ -224,9 +228,11 @@ _ = /usr/bin/make
 # environment
 XDG_RUNTIME_DIR = /run/user/1000
 # environment
+COLORTERM = truecolor
+# environment
 GOMODCACHE = /home/bpalmer/go/pkg/mod
 # environment
-JOURNAL_STREAM = 8:34219
+JOURNAL_STREAM = 8:36226
 # environment
 XDG_SESSION_CLASS = user
 # environment
@@ -242,6 +248,8 @@ ELECTRON_RUN_AS_NODE = 1
 # environment
 VSCODE_IPC_HOOK = /run/user/1000/vscode-954a9ce5-1.70.0-main.sock
 # environment
+TERM = xterm-256color
+# environment
 GOPROXY = https://proxy.golang.org,direct
 # default
 .RECIPEPREFIX := 
@@ -251,6 +259,12 @@ GOPROXY = https://proxy.golang.org,direct
 SUFFIXES := 
 # makefile (from 'Makefile', line 153)
 LOCALBIN = $(shell pwd)/bin
+# environment
+VSCODE_CLI = 1
+# environment
+ELECTRON_NO_ATTACH_CONSOLE = 1
+# environment
+VTE_VERSION = 6602
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell nocomment grouped-target extra-prereqs archives jobserver output-sync check-symlink guile load
 # environment
@@ -260,7 +274,7 @@ USE_IMAGE_DIGESTS = false
 # environment
 GDMSESSION = gnome
 # variable set hash-table stats:
-# Load=124/1024=12%, Rehash=0, Collisions=9/250=4%
+# Load=131/1024=13%, Rehash=0, Collisions=16/257=6%
 
 # Pattern-specific Variable Values
 
@@ -268,9 +282,9 @@ GDMSESSION = gnome
 
 # Directories
 
-# . (device 41, inode 4946997): 30 files, no impossibilities.
+# . (device 41, inode 4946997): 31 files, no impossibilities.
 
-# 30 files, no impossibilities in 1 directories.
+# 31 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -326,7 +340,6 @@ generate: controller-gen
 # ? := controller-gen
 # automatic
 # | := 
- 
 # variable set hash-table stats:
 # Load=9/32=28%, Rehash=0, Collisions=2/17=12%
 #  recipe to execute (from 'Makefile', line 95):
@@ -488,6 +501,7 @@ build: generate fmt vet
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/8=0%
 #  recipe to execute (from 'Makefile', line 113):
+ 
 	go build -o bin/manager main.go
 
 test: manifests generate fmt vet envtest
@@ -557,12 +571,12 @@ catalog-push:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 61 / storage = 778 B / avg = 12 B
-# current buf: size = 8162 B / used = 778 B / count = 61 / avg = 12 B
+# strcache buffers: 1 (0) / strings = 62 / storage = 785 B / avg = 12 B
+# current buf: size = 8162 B / used = 785 B / count = 62 / avg = 12 B
 
-# strcache performance: lookups = 199 / hit rate = 69%
+# strcache performance: lookups = 200 / hit rate = 69%
 # hash-table stats:
-# Load=61/8192=1%, Rehash=0, Collisions=0/199=0%
-# Finished Make data base on Wed Nov  2 09:11:06 2022
+# Load=62/8192=1%, Rehash=0, Collisions=0/200=0%
+# Finished Make data base on Thu Nov  3 09:38:15 2022
 
  

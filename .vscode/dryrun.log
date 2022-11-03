@@ -9,6 +9,5 @@ GOBIN=/home/bpalmer/github/scoped-operator-poc/bin go install sigs.k8s.io/contro
 go fmt ./...
 go vet ./...
 go build -o bin/manager main.go
- 
 make: Leaving directory '/home/bpalmer/github/scoped-operator-poc'
  
