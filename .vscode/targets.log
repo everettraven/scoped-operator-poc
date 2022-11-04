@@ -6,7 +6,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Thu Nov  3 09:38:15 2022
+# Make data base, printed on Fri Nov  4 10:03:40 2022
 
 # Variables
 
@@ -63,20 +63,19 @@ BUNDLE_IMG = $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
 # environment
 LANG = C
 # environment
-XAUTHORITY = /run/user/1000/.mutter-Xwaylandauth.9CJYU1
+XAUTHORITY = /run/user/1000/.mutter-Xwaylandauth.Q6JAV1
 # default
 .LOADED := 
 # default
 .INCLUDE_DIRS = /usr/include /usr/local/include /usr/include
 # environment
-GNOME_TERMINAL_SERVICE = :1.171
+GNOME_TERMINAL_SERVICE = :1.182
 # makefile
 MAKEFLAGS = pqrR
 # makefile (from 'Makefile', line 166)
 KUSTOMIZE_INSTALL_SCRIPT = "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 # makefile
 CURDIR := /home/bpalmer/github/scoped-operator-poc
- 
 # environment
 APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
 # environment
@@ -106,7 +105,7 @@ MAKEFILE_LIST := Makefile
 # environment
 ZSH = /home/bpalmer/.oh-my-zsh
 # environment
-VSCODE_PID = 3695
+VSCODE_PID = 3603
 # environment
 XDG_SESSION_TYPE = wayland
 # automatic
@@ -114,7 +113,7 @@ XDG_SESSION_TYPE = wayland
 # makefile (from 'Makefile', line 32)
 IMAGE_TAG_BASE = bpalmer/scoped-operator-poc
 # environment
-SESSION_MANAGER = local/unix:@/tmp/.ICE-unix/1961,unix/unix:/tmp/.ICE-unix/1961
+SESSION_MANAGER = local/unix:@/tmp/.ICE-unix/1964,unix/unix:/tmp/.ICE-unix/1964
 # automatic
 *F = $(notdir $*)
 # makefile (from 'Makefile', line 219)
@@ -144,7 +143,7 @@ GJS_DEBUG_TOPICS = JS ERROR;JS LOG
 # environment
 SHLVL = 2
 # environment
-GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/2279eef7_3faf_4e97_a264_ff73d72c368f
+GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/0eb9e826_55ab_452a_8ad9_78ea042d78cd
 # environment
 MAKELEVEL := 0
 # default
@@ -168,7 +167,7 @@ GOBIN = $(shell go env GOPATH)/bin
 # makefile (from 'Makefile', line 164)
 CONTROLLER_TOOLS_VERSION = v0.9.0
 # environment
-INVOCATION_ID = 1dc785f2edd34088972280f74f9e322b
+INVOCATION_ID = eb39c6751c1846dc829215d6d877c4e6
 # environment
 USERNAME = bpalmer
 # environment
@@ -198,7 +197,7 @@ GIO_LAUNCHED_DESKTOP_FILE = /usr/share/applications/code.desktop
 # makefile
 .DEFAULT_GOAL := all
 # environment
-SYSTEMD_EXEC_PID = 1993
+SYSTEMD_EXEC_PID = 1998
 # environment
 HISTCONTROL = ignoredups
 # environment
@@ -214,13 +213,13 @@ MAKE_VERSION := 4.3
 # makefile (from 'Makefile', line 210)
 OPM = $(shell which opm)
 # environment
-MANAGERPID = 1872
+MANAGERPID = 1877
 # environment
 which_declare = typeset -f
 # environment
 DEBUGINFOD_URLS = https://debuginfod.fedoraproject.org/ 
 # environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 3695
+GIO_LAUNCHED_DESKTOP_FILE_PID = 3603
 # environment
 PAGER = less
 # environment
@@ -232,7 +231,7 @@ COLORTERM = truecolor
 # environment
 GOMODCACHE = /home/bpalmer/go/pkg/mod
 # environment
-JOURNAL_STREAM = 8:36226
+JOURNAL_STREAM = 8:33423
 # environment
 XDG_SESSION_CLASS = user
 # environment
@@ -282,12 +281,13 @@ GDMSESSION = gnome
 
 # Directories
 
-# . (device 41, inode 4946997): 31 files, no impossibilities.
+# . (device 41, inode 4946997): 30 files, no impossibilities.
 
-# 31 files, no impossibilities in 1 directories.
+# 30 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
+ 
 # No implicit rules.
 
 # Files
@@ -458,6 +458,7 @@ manifests: controller-gen
 #  Modification time never checked.
 #  File has not been updated.
 
+ 
 all: build
 #  Phony target (prerequisite of .PHONY).
 #  Command line target.
@@ -501,7 +502,6 @@ build: generate fmt vet
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/8=0%
 #  recipe to execute (from 'Makefile', line 113):
- 
 	go build -o bin/manager main.go
 
 test: manifests generate fmt vet envtest
@@ -571,12 +571,12 @@ catalog-push:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 62 / storage = 785 B / avg = 12 B
-# current buf: size = 8162 B / used = 785 B / count = 62 / avg = 12 B
+# strcache buffers: 1 (0) / strings = 61 / storage = 778 B / avg = 12 B
+# current buf: size = 8162 B / used = 778 B / count = 61 / avg = 12 B
 
-# strcache performance: lookups = 200 / hit rate = 69%
+# strcache performance: lookups = 199 / hit rate = 69%
 # hash-table stats:
-# Load=62/8192=1%, Rehash=0, Collisions=0/200=0%
-# Finished Make data base on Thu Nov  3 09:38:15 2022
+# Load=61/8192=1%, Rehash=0, Collisions=0/199=0%
+# Finished Make data base on Fri Nov  4 10:03:40 2022
 
  

@@ -3,7 +3,7 @@ module github.com/example/memcached-operator
 go 1.18
 
 require (
-	github.com/everettraven/telescopia v0.0.0-20221028210815-63112cd92212
+	github.com/everettraven/telescopia v0.0.0-20221103210536-77da9d56b940
 	github.com/go-logr/logr v1.2.3
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.19.0
@@ -12,8 +12,6 @@ require (
 	k8s.io/client-go v0.24.3
 	sigs.k8s.io/controller-runtime v0.12.3
 )
-
-replace github.com/everettraven/telescopia => /home/bpalmer/github/telescopia
 
 require (
 	cloud.google.com/go v0.81.0 // indirect

@@ -35,6 +35,10 @@ spec:
           spec:
             description: MemcachedSpec defines the desired state of Memcached
             properties:
+              printCache:
+                description: PrintCache is whether or not to print out the current
+                  state of the cache when reconciling
+                type: boolean
               size:
                 description: Size is the size of the memcached deployment
                 format: int32

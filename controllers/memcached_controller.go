@@ -287,8 +287,10 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{Requeue: true}, err
 	}
 
-	fmt.Println("Current ScopedCache State:")
-	r.ScopeCache.PrintCache()
+	if memcached.Spec.PrintCache {
+		fmt.Println("Current ScopedCache State:")
+		r.ScopeCache.PrintCache()
+	}
 
 	return ctrl.Result{}, nil
 }
@@ -419,9 +421,6 @@ func (r *MemcachedReconciler) deploymentForMemcached(m *cachev1alpha1.Memcached)
 }
 
 func (r *MemcachedReconciler) cleanWatches(memcached *cachev1alpha1.Memcached) {
-	fmt.Println("Cache Before Removals")
-	r.ScopeCache.PrintCache()
-
 	// remove the deployment informer for the Memcached object
 	deployWatch := watchDeploy(memcached)
 	infOpts := telescopiacache.InformerOptions{
@@ -441,9 +440,6 @@ func (r *MemcachedReconciler) cleanWatches(memcached *cachev1alpha1.Memcached) {
 		Namespace: podWatch.GetNamespace(),
 	}
 	r.ScopeCache.RemoveInformer(infOpts, false)
-
-	fmt.Println("Cache After Removal")
-	r.ScopeCache.PrintCache()
 }
 
 func (r *MemcachedReconciler) finalizeMemcached(reqLogger logr.Logger, m *cachev1alpha1.Memcached) error {

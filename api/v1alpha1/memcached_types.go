@@ -28,6 +28,10 @@ type MemcachedSpec struct {
 	//+kubebuilder:validation:Minimum=0
 	// Size is the size of the memcached deployment
 	Size int32 `json:"size"`
+
+	// PrintCache is whether or not to print out the
+	// current state of the cache when reconciling
+	PrintCache bool `json:"printCache,omitempty"`
 }
 
 // MemcachedStatus defines the observed state of Memcached
